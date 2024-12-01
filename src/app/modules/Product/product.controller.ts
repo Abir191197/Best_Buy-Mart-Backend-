@@ -8,7 +8,7 @@ const productCreate = catchAsync(async (req, res) => {
   const productData = (req.body.data);
 
   // Collect all uploaded image paths and sizes from `req.files`
-  const images = req.files
+  const images = Array.isArray(req.files)
     ? req.files.map((file: any) => ({
         path: `/uploads/${file.filename}`, // Save image path
         size: file.size, // Save image size

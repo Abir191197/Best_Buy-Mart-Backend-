@@ -1,9 +1,7 @@
+"use strict";
 // import axios from "axios";
 // import config from "../../../config";
-
 // const url = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"; // SSLCOMMERZ initiation API URL
-
-
 // export async function createPaymentSession(paymentData: {
 //   bookingId: string;
 //   UserData: {
@@ -17,7 +15,6 @@
 //   if (!config.STORE_ID || !config.STORE_SECRET) {
 //     throw new Error("Missing store credentials in configuration.");
 //   }
-
 //   // Construct the payload
 //   const payload = ({
 //     store_id: config.STORE_ID,
@@ -48,18 +45,15 @@
 //     product_category: "cloth",
 //     product_profile: "physical-goods",
 //   });
-
 //   try {
 //     // Send POST request
 //     const response = await axios.post(url, payload, );
-
 //     // Check if the response contains an error
 //     if (response.data.status === "FAILED") {
 //       throw new Error(
 //         `Payment initiation failed: ${response.data.failedreason}`
 //       );
 //     }
-
 //     return response.data; // Successful response
 //   } catch (error) {
 //     console.error("Error creating payment session:", error.message || error);

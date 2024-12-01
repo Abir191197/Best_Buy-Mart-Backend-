@@ -13,7 +13,7 @@ import { TUser } from "../User/user.interface";
 
 import { PrismaClient } from "@prisma/client";
 import sendOtpMail from "../../utils/sendOtpEmail";
-import { createPaymentSession } from "../Payment/payment.utils";
+
 
 const prisma = new PrismaClient();
 
@@ -32,45 +32,6 @@ const prisma = new PrismaClient();
 //user sign Up
 
 const signUpUser = async (payload: TUser) => {
-
-
-
-
-
-
-
-
-// const paymentData = {
-//   bookingId: "BOOK1234",
-//   UserData: {
-//     name: "John Doe",
-//     email: "johndoe@example.com",
-//     address: "123 Street, City",
-//     phone: "01712345678",
-//   },
-// };
-
-// createPaymentSession(paymentData)
-//   .then((response) => {
-//     console.log("Payment session created successfully:", response);
-//     if (response.sessionkey) {
-//       const paymentUrl = response.GatewayPageURL;
-//       // Redirect the user to the SSLCOMMERZ payment page
-//       window.location.href = paymentUrl;
-//     }
-//   })
-//   .catch((error) => {
-//     console.error("Error:", error);
-//   });
-
-
-
-
-
-
-
-
-
 
 
 

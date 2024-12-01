@@ -28,7 +28,7 @@ app.use((0, cookie_parser_1.default)());
 app.get("/", (req, res) => {
     res.send("Hello from setup file server running Good ");
 });
-app.use("/api", routes_1.default);
+app.use("/api/v1", routes_1.default);
 // Handle errors and not found routes
 app.use(GlobalError_1.default);
 app.use(APInotFound_1.default);
