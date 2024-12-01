@@ -1,7 +1,7 @@
 import express from "express";
 
 import { AuthRoutes } from "../modules/Auth/auth.route";
-import path from "path";
+
 import { productRoutes } from "../modules/Product/product.route";
 
 

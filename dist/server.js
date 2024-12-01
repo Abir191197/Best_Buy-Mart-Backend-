@@ -3,11 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_1 = __importDefault(require("./config"));
+const config_1 = __importDefault(require("./config")); // Make sure this contains any other required configurations
 const app_1 = __importDefault(require("./app"));
 async function main() {
-    const server = app_1.default.listen(config_1.default.port, () => {
-        console.log("Sever is running on port ", config_1.default.port);
+    // Use Heroku's assigned PORT or fallback to a default port for local development
+    const port = process.env.PORT || config_1.default.port || 3000;
+    const server = app_1.default.listen(port, () => {
+        console.log("Server is running on port ", port);
     });
     const exitHandler = () => {
         if (server) {
@@ -18,11 +20,11 @@ async function main() {
         process.exit(1);
     };
     process.on("uncaughtException", (error) => {
-        console.log(error);
+        console.error("Uncaught exception: ", error);
         exitHandler();
     });
     process.on("unhandledRejection", (error) => {
-        console.log(error);
+        console.error("Unhandled rejection: ", error);
         exitHandler();
     });
 }

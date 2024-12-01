@@ -16,7 +16,8 @@ app.use((0, cookie_parser_1.default)());
 // CORS configuration
 const corsOptions = {
     origin: [
-        "http://localhost:5173", // Allowing only this origin for now
+        "http://localhost:5173",
+        "https://best-buy-mart-backend-5cceda1dad93.herokuapp.com", // Allowing only this origin for now
     ],
     credentials: true,
     methods: "GET,POST,PUT,DELETE",

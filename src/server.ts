@@ -1,11 +1,13 @@
 import { Server } from "http";
-
-import config from "./config";
+import config from "./config"; // Make sure this contains any other required configurations
 import app from "./app";
 
 async function main() {
-  const server: Server = app.listen(config.port, () => {
-    console.log("Sever is running on port ", config.port);
+  // Use Heroku's assigned PORT or fallback to a default port for local development
+  const port = process.env.PORT || config.port || 3000;
+
+  const server: Server = app.listen(port, () => {
+    console.log("Server is running on port ", port);
   });
 
   const exitHandler = () => {
@@ -16,13 +18,14 @@ async function main() {
     }
     process.exit(1);
   };
+
   process.on("uncaughtException", (error) => {
-    console.log(error);
+    console.error("Uncaught exception: ", error);
     exitHandler();
   });
 
   process.on("unhandledRejection", (error) => {
-    console.log(error);
+    console.error("Unhandled rejection: ", error);
     exitHandler();
   });
 }
