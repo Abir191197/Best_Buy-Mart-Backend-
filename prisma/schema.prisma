@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER   // Regular user
+  ADMIN  // Admin user
+}
+
+enum Status {
+  PENDING     // Pending user
+  ACTIVE      // Active user
+  SUSPENDED   // Suspended user
+}
+
+enum IsDeleted {
+  TRUE        // User is deleted
+  FALSE       // User is not deleted
+}
+
+model User {
+  userId         String    @id @default(uuid()) @db.Uuid // Primary key with UUID
+  name           String
+  email          String    @unique                      // Unique email for each user
+  password       String
+  phone          String?
+
+  role           Role      @default(USER)               // Default role is "USER"
+  profileImg     String[]  @default([])                 // Default is an empty array
+  status         Status    @default(PENDING)            // Default is "PENDING"
+  isDeleted      IsDeleted @default(FALSE)              // Default is "FALSE"
+
+  createdAt      DateTime  @default(now())              // Timestamp for creation
+  updatedAt      DateTime  @updatedAt                   // Automatically updated on modification
+
+  verificationCode String? @db.VarChar(6)               // Stores the OTP (nullable)
+  otpExpiresAt     DateTime?
+  otpVerified      Boolean  @default(false)             // Tracks if the OTP is verified
+}
+
+model Payment {
+  paymentId      String    @id @default(uuid()) @db.Uuid // Primary key with UUID
+  userId         String
+  productId      String
+  amount         Float
+  isPaid         Boolean   @default(false)
+  paymentDate    DateTime
+
+  createdAt      DateTime  @default(now())              // Timestamp for creation
+  updatedAt      DateTime  @updatedAt                   // Automatically updated on modification
+}
+
+model Product {
+  productId   String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  price       Float
+  stock       Int
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  ProductImg  ProductImg[] // Relation to ProductImg (one-to-many)
+}
+
+model ProductImg {
+  imgId     String   @id @default(uuid()) @db.Uuid
+  imgPath   String
+  imgSize   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  productId String @db.Uuid
+  product   Product @relation(fields: [productId], references: [productId])
+}
