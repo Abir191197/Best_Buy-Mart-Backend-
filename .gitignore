@@ -2,7 +2,7 @@
 node_modules/
 
 # TypeScript compiled output
-dist/
+
 
 # Environment variables (keep them secret!)
 .env
