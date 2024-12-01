@@ -1,4 +1,14 @@
-node_modules
-# Keep environment variables out of version control
+# Node.js dependencies
+node_modules/
+
+# TypeScript compiled output
+dist/
+
+# Environment variables (keep them secret!)
 .env
-uploads
+
+# Uploads directory (if you're saving files here)
+uploads/
+
+# Logs
+*.log
