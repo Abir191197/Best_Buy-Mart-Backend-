@@ -1,11 +1,18 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
+import path from "path";
 import cookieParser from "cookie-parser";
-import cors from "cors"; // Importing the CORS middleware
+import cors from "cors";
 import globalErrorHandler from "./app/Error/GlobalError";
 import APInotfound from "./app/middlewares/APInotFound";
 import router from "./app/routes";
 
 const app = express();
+
+// Log incoming requests for debugging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
 
 // Parsers
 app.use(express.json());
@@ -14,8 +21,8 @@ app.use(cookieParser());
 // CORS configuration
 const corsOptions = {
   origin: [
-    "http://localhost:5173",
-    "https://best-buy-mart-backend-5cceda1dad93.herokuapp.com", // Allowing only this origin for now
+    "http://localhost:5173", // Your frontend URL
+    "https://best-buy-mart-backend-5cceda1dad93.herokuapp.com", // Backend URL (for production)
   ],
   credentials: true,
   methods: "GET,POST,PUT,DELETE",
@@ -30,6 +37,26 @@ app.use(cors(corsOptions));
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello from setup file server running Good");
 });
+
+// Determine the path based on the environment
+let uploadsPath: string;
+
+if (process.env.NODE_ENV === "production") {
+  // Heroku or production environment
+  uploadsPath = path.join("/tmp", "uploads"); // Use /tmp folder for Heroku
+} else {
+  // Local environment
+  uploadsPath = path.resolve(
+    "D:/Web Level 2/Assignment 9/BestBuy Mart Backend/uploads"
+  );
+}
+
+console.log("Uploads path:", uploadsPath);
+
+// Static file serving for the "uploads" folder
+app.use("/uploads", express.static(uploadsPath));
+
+// Your application routes
 app.use("/api/v1", router);
 
 // Handle errors and not found routes

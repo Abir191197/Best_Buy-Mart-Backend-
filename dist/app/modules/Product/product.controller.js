@@ -30,6 +30,18 @@ const productCreate = (0, catchAsync_1.default)(async (req, res) => {
         data: result, // Return the created product data with images
     });
 });
+const productGetAll = (0, catchAsync_1.default)(async (req, res) => {
+    // Fetch all products from the database
+    const products = await product_service_1.ProductService.getAllProductsFromDB();
+    // Send response
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Products fetched successfully",
+        data: products, // Return all products
+    });
+});
 exports.productController = {
     productCreate,
+    productGetAll,
 };

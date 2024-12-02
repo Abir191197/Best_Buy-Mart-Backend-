@@ -16,4 +16,6 @@ router.post("/createProduct", productImgUpload_1.productImgUpload.upload.array("
     next(); // Continue to the next middleware (controller)
 }, product_controller_1.productController.productCreate // Call the controller's product creation function
 );
+// GET route to fetch all products
+router.get("/getProducts", product_controller_1.productController.productGetAll);
 exports.productRoutes = router;

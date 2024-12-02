@@ -31,6 +31,28 @@ const createProductIntoDB = async (productData: any) => {
   }
 };
 
+const getAllProductsFromDB = async () => {
+  try {
+    // Fetch all products, including associated images
+    const products = await prisma.product.findMany({
+      include: {
+        ProductImg: true, // Include the product images in the response
+      },
+    });
+
+    console.log("Products fetched:", products);
+    return products; // Return all products with images
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw error;
+  }
+};
+
+
+
+
+
 export const ProductService = {
   createProductIntoDB,
+  getAllProductsFromDB,
 };

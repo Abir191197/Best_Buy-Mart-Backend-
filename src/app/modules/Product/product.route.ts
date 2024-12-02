@@ -16,4 +16,7 @@ router.post(
   productController.productCreate // Call the controller's product creation function
 );
 
+// GET route to fetch all products
+router.get("/getProducts", productController.productGetAll);
+
 export const productRoutes = router;

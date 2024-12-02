@@ -13,7 +13,7 @@ CREATE TABLE "User" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
+    "phone" TEXT,
     "role" "Role" NOT NULL DEFAULT 'USER',
     "profileImg" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "status" "Status" NOT NULL DEFAULT 'PENDING',
@@ -25,6 +25,20 @@ CREATE TABLE "User" (
     "otpVerified" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("userId")
+);
+
+-- CreateTable
+CREATE TABLE "Payment" (
+    "paymentId" UUID NOT NULL,
+    "userId" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "isPaid" BOOLEAN NOT NULL DEFAULT false,
+    "paymentDate" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("paymentId")
 );
 
 -- CreateTable
@@ -42,18 +56,19 @@ CREATE TABLE "Product" (
 );
 
 -- CreateTable
-CREATE TABLE "Payment" (
-    "paymentId" UUID NOT NULL,
-    "userId" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
-    "amount" DOUBLE PRECISION NOT NULL,
-    "isPaid" BOOLEAN NOT NULL DEFAULT false,
-    "paymentDate" TIMESTAMP(3) NOT NULL,
+CREATE TABLE "ProductImg" (
+    "imgId" UUID NOT NULL,
+    "imgPath" TEXT NOT NULL,
+    "imgSize" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "productId" UUID NOT NULL,
 
-    CONSTRAINT "Payment_pkey" PRIMARY KEY ("paymentId")
+    CONSTRAINT "ProductImg_pkey" PRIMARY KEY ("imgId")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- AddForeignKey
+ALTER TABLE "ProductImg" ADD CONSTRAINT "ProductImg_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
