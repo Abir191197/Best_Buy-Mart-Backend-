@@ -24,6 +24,11 @@ enum Status {
   ACTIVE      // Active user
   SUSPENDED   // Suspended user
 }
+enum Shop_Status {
+  PENDING     // Pending shop
+  ACTIVE      // Active shop
+  SUSPENDED   // Suspended shop
+}
 
 enum IsDeleted {
   TRUE        // User is deleted
@@ -68,7 +73,10 @@ model Product {
   description String
   price       Float
   stock       Int
+  category    String
+  review      Int @default(0)
   isAvailable Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -84,4 +92,18 @@ model ProductImg {
   
   productId String @db.Uuid
   product   Product @relation(fields: [productId], references: [productId])
+}
+
+
+model Shop {
+  shopId      String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  logo        String
+  status      Shop_Status    @default(PENDING)
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  
 }
