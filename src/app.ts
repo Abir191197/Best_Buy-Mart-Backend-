@@ -5,7 +5,7 @@ import cors from "cors";
 import globalErrorHandler from "./app/Error/GlobalError";
 import APInotfound from "./app/middlewares/APInotFound";
 import router from "./app/routes";
-
+import config from "./config";
 const app = express();
 
 // Log incoming requests for debugging
@@ -41,7 +41,7 @@ app.get("/", (req: Request, res: Response) => {
 // Determine the path based on the environment
 let uploadsPath: string;
 
-if (process.env.NODE_ENV === "production") {
+if (config.NODE_ENV === "production") {
   // Heroku or production environment
   uploadsPath = path.join("/tmp", "uploads"); // Use /tmp folder for Heroku
 } else {
