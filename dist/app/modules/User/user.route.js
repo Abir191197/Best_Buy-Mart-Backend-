@@ -9,6 +9,6 @@ const user_controller_1 = require("./user.controller");
 const user_constant_1 = require("./user.constant");
 const authVerify_1 = __importDefault(require("../../middlewares/authVerify"));
 const router = express_1.default.Router();
-router.get("/me", (0, authVerify_1.default)(user_constant_1.USER_ROLE.admin, user_constant_1.USER_ROLE.user), user_controller_1.userControllers.findUser);
-router.put("/me", (0, authVerify_1.default)(user_constant_1.USER_ROLE.admin, user_constant_1.USER_ROLE.user), user_controller_1.userControllers.updatedUser);
+router.get("/me", (0, authVerify_1.default)(user_constant_1.USER_ROLE.ADMIN, user_constant_1.USER_ROLE.VENDOR), user_controller_1.userControllers.findUser);
+router.put("/me", (0, authVerify_1.default)(user_constant_1.USER_ROLE.ADMIN, user_constant_1.USER_ROLE.VENDOR), user_controller_1.userControllers.updatedUser);
 exports.UserRoutes = router;

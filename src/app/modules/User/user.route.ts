@@ -10,12 +10,12 @@ const router = express.Router();
 
 router.get(
   "/me",
-  authVerify(USER_ROLE.admin, USER_ROLE.user),
+  authVerify(USER_ROLE.ADMIN, USER_ROLE.VENDOR),
   userControllers.findUser
 );
 router.put(
   "/me",
-  authVerify(USER_ROLE.admin, USER_ROLE.user),
+  authVerify(USER_ROLE.ADMIN, USER_ROLE.VENDOR),
   userControllers.updatedUser
 );
 export const UserRoutes = router;

@@ -1,47 +1,28 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.productController = void 0;
-const http_status_codes_1 = require("http-status-codes");
-const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
-const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const product_service_1 = require("./product.service");
-const productCreate = (0, catchAsync_1.default)(async (req, res) => {
-    // Parse product data (name, description, price, etc.) from the request body
-    const productData = (req.body.data);
-    // Collect all uploaded image paths and sizes from `req.files`
-    const images = Array.isArray(req.files)
-        ? req.files.map((file) => ({
-            path: `/uploads/${file.filename}`, // Save image path
-            size: file.size, // Save image size
-        }))
-        : []; // No images if none uploaded
-    // Add images data to the product data
-    const productWithImages = Object.assign(Object.assign({}, productData), { images });
-    // Create the product in the database
-    const result = await product_service_1.ProductService.createProductIntoDB(productWithImages);
-    // Send response
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_codes_1.StatusCodes.OK,
-        success: true,
-        message: "Product created successfully",
-        data: result, // Return the created product data with images
-    });
-});
-const productGetAll = (0, catchAsync_1.default)(async (req, res) => {
-    // Fetch all products from the database
-    const products = await product_service_1.ProductService.getAllProductsFromDB();
-    // Send response
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_codes_1.StatusCodes.OK,
-        success: true,
-        message: "Products fetched successfully",
-        data: products, // Return all products
-    });
-});
+const productCreate = async (req, res) => {
+    try {
+        const { data } = req.body; // Extract product data from the request body
+        const images = req.files; // Get the uploaded images
+        // Construct the productData object, including S3 image URLs
+        const productData = Object.assign(Object.assign({}, data), { images: images.map((file) => ({
+                path: file.location, // S3 URL of the uploaded image
+                size: file.size, // Image size
+            })) });
+        // Save product data into the database
+        const createdProduct = await product_service_1.ProductService.createProductIntoDB(productData);
+        res.status(201).json({
+            message: "Product created successfully",
+            product: createdProduct,
+        });
+    }
+    catch (error) {
+        console.error("Error creating product:", error);
+        res.status(500).json({ message: "Error creating product" });
+    }
+};
 exports.productController = {
     productCreate,
-    productGetAll,
 };

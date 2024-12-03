@@ -24,16 +24,6 @@ const Generate_JWT_Token_1 = require("../../utils/Generate_JWT_Token");
 const client_1 = require("@prisma/client");
 const sendOtpEmail_1 = __importDefault(require("../../utils/sendOtpEmail"));
 const prisma = new client_1.PrismaClient();
-// const getNextGoogleId = async () => {
-//   const maxUser = await UserModel.findOne({}, { googleId: 1 })
-//     .sort({ googleId: -1 })
-//     .exec();
-//   if (!maxUser || maxUser.googleId === null) {
-//     return 1; // Start from 1 if no users exist or if all `googleId`s are null
-//   }
-//   return maxUser.googleId + 1; // Increment the highest value
-// };
-// SignInUser function
 //user sign Up
 const signUpUser = async (payload) => {
     // Check if the email already exists
@@ -66,6 +56,7 @@ const signUpUser = async (payload) => {
             email: payload.email,
             password: hashedPassword,
             phone: payload.phone,
+            role: payload.role,
             verificationCode: otp.toString(),
             otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
         },
@@ -108,7 +99,7 @@ const logInUser = async (payload) => {
         throw new appError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "Invalid credentials!");
     }
     // Generate JWT tokens
-    const jwtPayload = { email: user.email, role: user.role || "user" }; // Default role to "user" if undefined
+    const jwtPayload = { userId: user.userId, email: user.email, role: user.role, name: user.name || "USER" }; // Default role to "user" if undefined
     const accessToken = (0, Generate_JWT_Token_1.generateAccessToken)(jwtPayload);
     const refreshToken = (0, Generate_JWT_Token_1.generateRefreshToken)(jwtPayload);
     // Remove sensitive information (like password) before returning user data
@@ -199,18 +190,6 @@ const resendOtpIntoDB = async (payload) => {
     await (0, sendOtpEmail_1.default)(updatedUser.email, otp.toString());
     return { message: "OTP has been resent successfully." };
 };
-// GoogleAuth function
-// const googleAuth = async (user: any) => {
-//   let existingUser = await UserModel.findOne({ email: user.email });
-//   if (!existingUser) {
-//     throw new Error("User not found");
-//   }
-//   // Generate tokens
-//   const jwtPayload = { email: existingUser.email, role: existingUser.role };
-//   const accessToken = generateAccessToken(jwtPayload);
-//   const refreshToken = generateRefreshToken(jwtPayload);
-//   return { existingUser, accessToken, refreshToken };
-// };
 exports.AuthServices = {
     signUpUser,
     logInUser,

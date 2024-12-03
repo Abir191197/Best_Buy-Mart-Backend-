@@ -11,9 +11,11 @@ const createProductIntoDB = async (productData: any) => {
         price: productData.price,
         stock: productData.stock,
         isAvailable: productData.isAvailable,
+        category: productData.category,
+        shopId: productData.shopId,
         ProductImg: {
           create: productData.images.map((img: any) => ({
-            imgPath: img.path, // Save the image path
+            imgPath: img.path, // Save the image URL from S3
             imgSize: img.size, // Save the image size
           })),
         },
@@ -31,28 +33,6 @@ const createProductIntoDB = async (productData: any) => {
   }
 };
 
-const getAllProductsFromDB = async () => {
-  try {
-    // Fetch all products, including associated images
-    const products = await prisma.product.findMany({
-      include: {
-        ProductImg: true, // Include the product images in the response
-      },
-    });
-
-    console.log("Products fetched:", products);
-    return products; // Return all products with images
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    throw error;
-  }
-};
-
-
-
-
-
 export const ProductService = {
   createProductIntoDB,
-  getAllProductsFromDB,
 };

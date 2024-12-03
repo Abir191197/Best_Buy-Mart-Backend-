@@ -17,17 +17,7 @@ import sendOtpMail from "../../utils/sendOtpEmail";
 
 const prisma = new PrismaClient();
 
-// const getNextGoogleId = async () => {
-//   const maxUser = await UserModel.findOne({}, { googleId: 1 })
-//     .sort({ googleId: -1 })
-//     .exec();
-//   if (!maxUser || maxUser.googleId === null) {
-//     return 1; // Start from 1 if no users exist or if all `googleId`s are null
-//   }
-//   return maxUser.googleId + 1; // Increment the highest value
-// };
 
-// SignInUser function
 
 //user sign Up
 
@@ -63,6 +53,7 @@ const signUpUser = async (payload: TUser) => {
       name: payload.name,
       password: hashedPassword,
       phone: payload.phone,
+
       verificationCode: otp.toString(),
       otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     },
@@ -72,6 +63,8 @@ const signUpUser = async (payload: TUser) => {
       email: payload.email,
       password: hashedPassword,
       phone: payload.phone,
+      role: payload.role,
+    
       verificationCode: otp.toString(),
       otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     },
@@ -85,7 +78,6 @@ const signUpUser = async (payload: TUser) => {
 
   return { email: payload.email };
 };
-
 
 
 // login User
@@ -131,7 +123,7 @@ const logInUser = async (payload: { email: string; password: string }) => {
   }
 
   // Generate JWT tokens
-  const jwtPayload = { email: user.email, role: user.role || "user" }; // Default role to "user" if undefined
+  const jwtPayload = {userId:user.userId, email: user.email, role: user.role,name:user.name || "USER" }; // Default role to "user" if undefined
   const accessToken = generateAccessToken(jwtPayload);
   const refreshToken = generateRefreshToken(jwtPayload);
 
@@ -252,21 +244,7 @@ const resendOtpIntoDB = async (payload: { email: string }) => {
 
 
 
-// GoogleAuth function
 
-// const googleAuth = async (user: any) => {
-//   let existingUser = await UserModel.findOne({ email: user.email });
-//   if (!existingUser) {
-//     throw new Error("User not found");
-//   }
-
-//   // Generate tokens
-//   const jwtPayload = { email: existingUser.email, role: existingUser.role };
-//   const accessToken = generateAccessToken(jwtPayload);
-//   const refreshToken = generateRefreshToken(jwtPayload);
-
-//   return { existingUser, accessToken, refreshToken };
-// };
 
 export const AuthServices = {
   signUpUser,

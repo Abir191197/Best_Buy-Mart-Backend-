@@ -116,34 +116,6 @@ const resendCode = (0, catchAsync_1.default)(async (req, res) => {
         data: { message },
     });
 });
-// // Google OAuth callback
-// const google = catchAsync(async (req: Request, res: Response) => {
-//   const user = req.user;
-//   if (!user) {
-//     // Redirect to the login page or any other appropriate action
-//     return res.redirect("/");
-//   }
-//   // Call AuthServices.googleAuth to get or create the user and generate tokens
-//   const { existingUser, accessToken, refreshToken } =
-//     await AuthServices.googleAuth(user);
-//   // Set cookies for access and refresh tokens
-//   setAuthCookies(res, accessToken, refreshToken);
-//   const userData = {
-//     _id: existingUser._id,
-//     name: existingUser.name,
-//     email: existingUser.email,
-//     phone: existingUser.phone,
-//     address: existingUser.address,
-//     role: existingUser.role,
-//   };
-//   sendResponse(res, {
-//     statusCode: StatusCodes.OK,
-//     success: true,
-//     message: "User logged in successfully",
-//     token: accessToken,
-//     data: userData,
-//   });
-// });
 exports.AuthControllers = {
     signUp,
     logIn,

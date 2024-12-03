@@ -28,7 +28,7 @@ const setAuthCookies = (
 };
 
 // SignIn function
-const signUp = catchAsync(async (req: Request, res: Response) => {
+const signUp = catchAsync(async (req, res) => {
   const result = await AuthServices.signUpUser(req.body);
  const { email } = result;
 
@@ -50,7 +50,7 @@ const signUp = catchAsync(async (req: Request, res: Response) => {
 });
 
 // LogIn function
-const logIn = catchAsync(async (req: Request, res: Response) => {
+const logIn = catchAsync(async (req, res) => {
   const result = await AuthServices.logInUser(req.body);
   const { user,accessToken, refreshToken } = result;
 
@@ -77,7 +77,7 @@ const logIn = catchAsync(async (req: Request, res: Response) => {
 });
 
 // RefreshToken function
-const refreshAccessToken = catchAsync(async (req: Request, res: Response) => {
+const refreshAccessToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
@@ -106,7 +106,7 @@ const refreshAccessToken = catchAsync(async (req: Request, res: Response) => {
 //verify OTP and sign up complete
 
 
-const OtpVerification = catchAsync(async (req: Request, res: Response) => {
+const OtpVerification = catchAsync(async (req, res) => {
   
   const result = await AuthServices.OtpVerifyFromDB(req.body);
   const { user, accessToken, refreshToken } = result;
@@ -135,7 +135,7 @@ const OtpVerification = catchAsync(async (req: Request, res: Response) => {
 });
 
 
-const resendCode = catchAsync(async (req: Request, res: Response) => {
+const resendCode = catchAsync(async (req, res) => {
   const result = await AuthServices.resendOtpIntoDB(req.body);
   const { message } = result;
 
@@ -148,39 +148,7 @@ const resendCode = catchAsync(async (req: Request, res: Response) => {
 });
 
 
-// // Google OAuth callback
-// const google = catchAsync(async (req: Request, res: Response) => {
-//   const user = req.user;
 
-//   if (!user) {
-//     // Redirect to the login page or any other appropriate action
-//     return res.redirect("/");
-//   }
-
-//   // Call AuthServices.googleAuth to get or create the user and generate tokens
-//   const { existingUser, accessToken, refreshToken } =
-//     await AuthServices.googleAuth(user);
-
-//   // Set cookies for access and refresh tokens
-//   setAuthCookies(res, accessToken, refreshToken);
-
-//   const userData = {
-//     _id: existingUser._id,
-//     name: existingUser.name,
-//     email: existingUser.email,
-//     phone: existingUser.phone,
-//     address: existingUser.address,
-//     role: existingUser.role,
-//   };
-
-//   sendResponse(res, {
-//     statusCode: StatusCodes.OK,
-//     success: true,
-//     message: "User logged in successfully",
-//     token: accessToken,
-//     data: userData,
-//   });
-// });
 
 export const AuthControllers = {
   signUp,

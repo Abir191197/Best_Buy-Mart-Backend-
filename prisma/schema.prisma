@@ -2,21 +2,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL") // Your main Heroku database URL
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL") // Shadow database URL
 }
 
-
 enum Role {
   USER   // Regular user
   ADMIN  // Admin user
+  VENDOR // Vendor user
 }
 
 enum Status {
@@ -24,10 +19,12 @@ enum Status {
   ACTIVE      // Active user
   SUSPENDED   // Suspended user
 }
+
 enum Shop_Status {
   PENDING     // Pending shop
   ACTIVE      // Active shop
   SUSPENDED   // Suspended shop
+  REVIEW_PENDING // Shop under review
 }
 
 enum IsDeleted {
@@ -40,31 +37,47 @@ model User {
   name           String
   email          String    @unique                      // Unique email for each user
   password       String
-  phone          String?
-
-  role           Role      @default(USER)               // Default role is "USER"
-  profileImg     String[]  @default([])                 // Default is an empty array
-  status         Status    @default(PENDING)            // Default is "PENDING"
-  isDeleted      IsDeleted @default(FALSE)              // Default is "FALSE"
-
-  createdAt      DateTime  @default(now())              // Timestamp for creation
-  updatedAt      DateTime  @updatedAt                   // Automatically updated on modification
-
-  verificationCode String? @db.VarChar(6)               // Stores the OTP (nullable)
-  otpExpiresAt     DateTime?
-  otpVerified      Boolean  @default(false)             // Tracks if the OTP is verified
+  phone          String?   @unique                      // Unique phone number for the user
+  role           Role      @default(USER)               // Role of the user (Admin, Vendor, etc.)
+  profileImg     String?  // Profile image (single image)
+  status         Status    @default(PENDING)            // User status (e.g., pending, active, suspended)
+  isDeleted      IsDeleted @default(FALSE)              // Flag for soft deletion
+  createdAt      DateTime  @default(now())              // Creation timestamp
+  updatedAt      DateTime  @updatedAt                   // Auto-updated on modification
+  verificationCode String? @db.VarChar(6)               // OTP verification code
+  otpExpiresAt     DateTime?                           // OTP expiration time
+  otpVerified      Boolean  @default(false)             // Whether the OTP is verified
+  shops           Shop[]   // One-to-many relation with Shop (User can own many Shops)
+  payments        Payment[] // One-to-many relation with Payment
 }
 
 model Payment {
   paymentId      String    @id @default(uuid()) @db.Uuid // Primary key with UUID
-  userId         String
-  productId      String
+  userId         String   @db.Uuid                     // Correct data type for UUID
+  productId      String  @db.Uuid     
   amount         Float
   isPaid         Boolean   @default(false)
   paymentDate    DateTime
 
   createdAt      DateTime  @default(now())              // Timestamp for creation
   updatedAt      DateTime  @updatedAt                   // Automatically updated on modification
+
+  user           User      @relation(fields: [userId], references: [userId]) // Relation to User
+  product        Product   @relation(fields: [productId], references: [productId]) // Relation to Product
+}
+
+model ProductImg {
+  imgId     String   @id @default(uuid()) @db.Uuid
+  imgPath   String
+  imgSize   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  productId String @db.Uuid
+  product   Product @relation(fields: [productId], references: [productId])
+
+
+  
 }
 
 model Product {
@@ -81,29 +94,35 @@ model Product {
   updatedAt   DateTime @updatedAt
   
   ProductImg  ProductImg[] // Relation to ProductImg (one-to-many)
-}
 
-model ProductImg {
-  imgId     String   @id @default(uuid()) @db.Uuid
-  imgPath   String
-  imgSize   Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  productId String @db.Uuid
-  product   Product @relation(fields: [productId], references: [productId])
-}
+  shopId      String      @db.Uuid // Correct data type for UUID
+  shop        Shop        @relation(fields: [shopId], references: [shopId]) // Relation to Shop
 
+  Payment Payment[]
+}
 
 model Shop {
-  shopId      String    @id @default(uuid()) @db.Uuid
+  shopId      String    @id @default(uuid()) @db.Uuid // Primary key as UUID
   name        String
   description String
-  logo        String
-  status      Shop_Status    @default(PENDING)
-  isDeleted   Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  status      Shop_Status @default(PENDING)         // Shop status (e.g., active, pending)
+  isDeleted   Boolean   @default(false)              // Flag for soft deletion
+
+  createdAt   DateTime  @default(now())              // Creation timestamp
+  updatedAt   DateTime  @updatedAt                   // Auto-updated on modification
+
+  userId      String   @db.Uuid       // Foreign key referencing User
+  user        User      @relation(fields: [userId], references: [userId]) // User who owns the shop
+  logo  Logo[] 
+  products    Product[] // One-to-many relation with Product (A shop can have many products)
 
   
+}
+
+model Logo {
+  logoId       String    @id @default(uuid()) @db.Uuid 
+  imgPath      String
+  imgSize      Int
+  shopId       String @db.Uuid
+  shop         Shop   @relation(fields: [shopId], references: [shopId])
 }

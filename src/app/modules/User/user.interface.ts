@@ -8,7 +8,7 @@ export interface TUser {
   password: string;
   phone: string;
   address: string;
- googleId:string
-  Role: TUserRole; // Use the type derived from USER_ROLE
+ 
+  role: TUserRole; // Use the type derived from USER_ROLE
 }
 export { TUserRole };

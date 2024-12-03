@@ -20,4 +20,6 @@ exports.default = {
     STORE_SECRET: process.env.store_passwd,
     STORE_URL: process.env.store_url,
     is_live: process.env.is_live,
+    AWS_SECRET_ACCESS_KEY: process.env.Secret_key,
+    AWS_ACCESS_KEY: process.env.Access_key,
 };

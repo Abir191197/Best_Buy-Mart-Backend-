@@ -1,54 +1,39 @@
-import { StatusCodes } from "http-status-codes";
-import catchAsync from "../../utils/catchAsync";
-import sendResponse from "../../utils/sendResponse";
 import { ProductService } from "./product.service";
+import { Request, Response } from "express";
 
-const productCreate = catchAsync(async (req, res) => {
-  // Parse product data (name, description, price, etc.) from the request body
-  const productData = (req.body.data);
+const productCreate = async (req: Request, res: Response) => {
+  try {
+    const { data } = req.body; // Extract product data from the request body
+    interface CustomFile extends Express.Multer.File {
+      location: string;
+    }
 
-  // Collect all uploaded image paths and sizes from `req.files`
-  const images = Array.isArray(req.files)
-    ? req.files.map((file: any) => ({
-        path: `/uploads/${file.filename}`, // Save image path
-        size: file.size, // Save image size
-      }))
-    : []; // No images if none uploaded
+    const images = req.files as CustomFile[]; // Get the uploaded images
 
-  // Add images data to the product data
-  const productWithImages = {
-    ...productData,
-    images, // Add the image data to the product
-  };
+    // Construct the productData object, including S3 image URLs
+    const productData = {
+      ...data,
+      images: images.map((file) => ({
+        path: file.location, // S3 URL of the uploaded image
+        size: file.size, // Image size
+      })),
+    };
 
-  // Create the product in the database
-  const result = await ProductService.createProductIntoDB(productWithImages);
+    // Save product data into the database
+    const createdProduct = await ProductService.createProductIntoDB(
+      productData
+    );
 
-  // Send response
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Product created successfully",
-    data: result, // Return the created product data with images
-  });
-});
-
-
-const productGetAll = catchAsync(async (req, res) => {
-  // Fetch all products from the database
-  const products = await ProductService.getAllProductsFromDB();
-
-  // Send response
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "Products fetched successfully",
-    data: products, // Return all products
-  });
-});
-
+    res.status(201).json({
+      message: "Product created successfully",
+      product: createdProduct,
+    });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ message: "Error creating product" });
+  }
+};
 
 export const productController = {
   productCreate,
-  productGetAll,
 };
