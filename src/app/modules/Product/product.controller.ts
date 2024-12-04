@@ -6,7 +6,7 @@ import { StatusCodes } from "http-status-codes";
 
 //products create
 
-const productCreate = catchAsync(async (req: Request, res: Response) => {
+const productCreate = catchAsync(async (req, res) => {
   try {
     const { data } = req.body; // Extract product data from the request body
 
@@ -50,7 +50,7 @@ const productCreate = catchAsync(async (req: Request, res: Response) => {
 
 // get all products and search and limit and pagination
 
-const getAllProducts = catchAsync(async (req: Request, res: Response) => {
+const getAllProducts = catchAsync(async (req, res) => {
   try {
     // Parse query parameters from the request
     const query = {
@@ -88,9 +88,65 @@ const getAllProducts = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+const productUpdate = catchAsync(async (req, res) => {
+  try {
+    const { data } = req.body; // Extract product data from the request body
+    const productId = req.params.productId; // Get the productId from the URL params
+
+    // Define the CustomFile interface for files uploaded with Multer
+    interface CustomFile extends Express.Multer.File {
+      location: string;
+    }
+
+    // Get the uploaded images (if any)
+    const images = req.files as CustomFile[];
+
+    // Prepare product data for update
+    const updateData: any = {
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      stock: data.stock,
+      isAvailable: data.isAvailable,
+      category: data.category,
+    };
+
+    // If new images were uploaded, process them and update the product images
+    if (images && images.length > 0) {
+      updateData.ProductImg = {
+        create: images.map((file) => ({
+          imgPath: file.location, // Save the image URL from S3
+          imgSize: file.size, // Save the image size
+        })),
+      };
+    }
+
+    // Update the product in the database
+    const updatedProduct = await ProductService.updateProductInDB(
+      productId,
+      updateData
+    );
+
+    // Send the response with the updated product
+    sendResponse(res, {
+      statusCode: StatusCodes.OK, // 200 status for successful update
+      success: true,
+      message: "Product updated successfully", // Success message
+      data: updatedProduct, // Send the updated product as the response
+    });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error updating product", // Return an error message
+    });
+  }
+});
+
+
 
 
 export const productController = {
   productCreate,
   getAllProducts,
+  productUpdate,
 };

@@ -49,23 +49,34 @@ model User {
   otpVerified      Boolean  @default(false)             // Whether the OTP is verified
   shops           Shop[]   // One-to-many relation with Shop (User can own many Shops)
   payments        Payment[] // One-to-many relation with Payment
+
+  Review Review[]
 }
 
-model Payment {
-  paymentId      String    @id @default(uuid()) @db.Uuid // Primary key with UUID
-  userId         String   @db.Uuid                     // Correct data type for UUID
-  productId      String  @db.Uuid     
-  amount         Float
-  isPaid         Boolean   @default(false)
-  paymentDate    DateTime
 
-  createdAt      DateTime  @default(now())              // Timestamp for creation
-  updatedAt      DateTime  @updatedAt                   // Automatically updated on modification
+model Product {
+  productId   String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  price       Float
+  stock       Int
+  category    String
+  discountCode Int?
+  discountPercent    Int?
+  isAvailable Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  ProductImg  ProductImg[] // Relation to ProductImg (one-to-many)
 
-  user           User      @relation(fields: [userId], references: [userId]) // Relation to User
-  product        Product   @relation(fields: [productId], references: [productId]) // Relation to Product
+  shopId      String      @db.Uuid // Correct data type for UUID
+  shop        Shop        @relation(fields: [shopId], references: [shopId]) // Relation to Shop
+
+  Payment Payment[]
+
+  Review Review[]
 }
-
 model ProductImg {
   imgId     String   @id @default(uuid()) @db.Uuid
   imgPath   String
@@ -80,26 +91,21 @@ model ProductImg {
   
 }
 
-model Product {
-  productId   String    @id @default(uuid()) @db.Uuid
-  name        String
-  description String
-  price       Float
-  stock       Int
-  category    String
-  review      Int @default(0)
-  isAvailable Boolean  @default(true)
-  isDeleted   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  ProductImg  ProductImg[] // Relation to ProductImg (one-to-many)
+model Review {
+  reviewId    String   @id @default(uuid()) @db.Uuid
+  rating      Int      // Rating given by the user (1 to 5 scale)
+  reviewText  String   // Review text
+  createdAt   DateTime @default(now()) // When the review was created
+  updatedAt   DateTime @updatedAt // When the review was last updated
 
-  shopId      String      @db.Uuid // Correct data type for UUID
-  shop        Shop        @relation(fields: [shopId], references: [shopId]) // Relation to Shop
+  userId      String   @db.Uuid // Foreign key for the User who wrote the review
+  user        User     @relation(fields: [userId], references: [userId])
 
-  Payment Payment[]
+  productId   String   @db.Uuid // Foreign key for the Product being reviewed
+  product     Product  @relation(fields: [productId], references: [productId])
 }
+
+
 
 model Shop {
   shopId      String    @id @default(uuid()) @db.Uuid // Primary key as UUID
@@ -118,7 +124,20 @@ model Shop {
 
   
 }
+model Payment {
+  paymentId      String    @id @default(uuid()) @db.Uuid // Primary key with UUID
+  userId         String   @db.Uuid                     // Correct data type for UUID
+  productId      String  @db.Uuid     
+  amount         Float
+  isPaid         Boolean   @default(false)
+  paymentDate    DateTime
 
+  createdAt      DateTime  @default(now())              // Timestamp for creation
+  updatedAt      DateTime  @updatedAt                   // Automatically updated on modification
+
+  user           User      @relation(fields: [userId], references: [userId]) // Relation to User
+  product        Product   @relation(fields: [productId], references: [productId]) // Relation to Product
+}
 model Logo {
   logoId       String    @id @default(uuid()) @db.Uuid 
   imgPath      String
