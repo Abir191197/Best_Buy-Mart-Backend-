@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
+import ProductQueryParams from "./interface";
 const prisma = new PrismaClient();
 
 const createProductIntoDB = async (productData: any) => {
@@ -33,6 +34,46 @@ const createProductIntoDB = async (productData: any) => {
   }
 };
 
+
+const getAllProductsFromDB = async (query: ProductQueryParams) => {
+  try {
+    const { searchTerm, sort, skip = 0, limit = 10, fields } = query;
+
+    // Build the search condition if searchTerm is provided
+    const searchCondition = searchTerm
+      ? {
+          OR: [
+            { name: { contains: searchTerm, mode: Prisma.QueryMode.insensitive } }, // Search in product name
+            { description: { contains: searchTerm, mode: Prisma.QueryMode.insensitive } }, // Search in description
+          ],
+        }
+      : undefined;
+
+    // Fetch products from the database with pagination, sorting, filtering, and field selection
+    const products = await prisma.product.findMany({
+      where: searchCondition, // Apply search condition if available
+      orderBy: sort, // Sorting by provided parameters
+      skip, // Pagination: skip items
+      take: limit, // Pagination: limit the number of results
+      select: fields || undefined, // Select specific fields if provided
+    });
+
+    console.log("Products retrieved:", products);
+    return products; // Return the products fetched from the database
+  } catch (error) {
+    console.error("Error retrieving products:", error);
+    throw new Error("Failed to retrieve products. Please try again.");
+  }
+};
+
+
+
+
+
+
+
+
 export const ProductService = {
   createProductIntoDB,
-};
+  getAllProductsFromDB,
+}
