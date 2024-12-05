@@ -38,4 +38,24 @@ router.put(
 );
 
 
+
+router.post(
+  "/duplicateProduct/:productId",
+  //authVerify(USER_ROLE.ADMIN, USER_ROLE.VENDOR), // Verify the user is authenticated
+  productImgUpload.upload.array("images", 5), // Allows up to 5 images to be uploaded
+  (req: Request, res: Response, next: NextFunction) => {
+    // Ensure req.body.data is parsed properly, and pass it to the controller
+    req.body.data = JSON.parse(req.body.data);
+    next(); // Continue to the next middleware (controller)
+  },
+  productController.productDuplicate // Call the controller's product creation function
+);
+
+
+//get single product
+
+router.get("/getProduct/:productId", productController.getProduct);
+
+
+
 export const productRoutes = router;

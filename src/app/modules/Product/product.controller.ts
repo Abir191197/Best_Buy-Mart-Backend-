@@ -1,8 +1,7 @@
-import { Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { ProductService } from "./product.service";
-import { StatusCodes } from "http-status-codes";
 
 //products create
 
@@ -47,7 +46,6 @@ const productCreate = catchAsync(async (req, res) => {
   }
 });
 
-
 // get all products and search and limit and pagination
 
 const getAllProducts = catchAsync(async (req, res) => {
@@ -87,6 +85,33 @@ const getAllProducts = catchAsync(async (req, res) => {
     });
   }
 });
+
+//get  single product
+const getProduct = catchAsync(async (req, res) => {
+  try {
+    const productId = req.params.productId; // Extract the productId from the URL params
+
+    // Fetch the product from the database
+    const product = await ProductService.getProductFromDB(productId);
+
+    // Send the response with the retrieved product
+    sendResponse(res, {
+      statusCode: StatusCodes.OK, // 200 status for successful request
+      success: true,
+      message: "Product retrieved successfully", // Success message
+      data: product, // Send the product data as the response
+    });
+  } catch (error) {
+    console.error("Error getting product:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error getting product", // Return an error message
+    });
+  }
+});
+
+
+
+
 
 const productUpdate = catchAsync(async (req, res) => {
   try {
@@ -142,11 +167,55 @@ const productUpdate = catchAsync(async (req, res) => {
   }
 });
 
+const productDuplicate = catchAsync(async (req, res) => {
+  try {
+    const { data } = req.body;
+    const { productId } = req.params;
+    
 
+    // Define the CustomFile interface for files uploaded with Multer
+    interface CustomFile extends Express.Multer.File {
+      location: string;
+    }
 
+    // Get the uploaded images
+    const images = req.files as CustomFile[];
+
+    // Construct the productData object, including S3 image URLs
+    const productData = {
+      ...data,
+      images: images.map((file) => ({
+        path: file.location, // S3 URL of the uploaded image
+        size: file.size, // Image size
+      })),
+    };
+
+    // Save product data into the database
+    const createdProduct = await ProductService.duplicateProductInDB(
+      productId,
+      productData
+      
+    );
+
+    // Send the response with the created product
+    sendResponse(res, {
+      statusCode: StatusCodes.CREATED, // 201 status for created resources
+      success: true,
+      message: "Duplicate existing product created successfully", // Success message
+      data: createdProduct, // Send the created product as the response
+    });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error creating product", // Return an error message
+    });
+  }
+});
 
 export const productController = {
   productCreate,
   getAllProducts,
+  getProduct,
   productUpdate,
+  productDuplicate,
 };

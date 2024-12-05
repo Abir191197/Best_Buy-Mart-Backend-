@@ -67,7 +67,7 @@ model Product {
   isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+ 
   ProductImg  ProductImg[] // Relation to ProductImg (one-to-many)
 
   shopId      String      @db.Uuid // Correct data type for UUID
