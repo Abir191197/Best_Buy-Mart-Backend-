@@ -1,9 +1,9 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { JwtPayload } from "jsonwebtoken";
 import ProductQueryParams from "./interface";
 const prisma = new PrismaClient();
 
 const createProductIntoDB = async (productData: any) => {
-
   try {
     // Check the status of the shop by its ID
     const shop = await prisma.shop.findUnique({
@@ -82,7 +82,7 @@ const getAllProductsFromDB = async (query: ProductQueryParams) => {
         isDeleted: false, // Ensure only non-deleted products are included
         shop: {
           status: {
-            notIn: ["PENDING", "REVIEW_PENDING","SUSPENDED"], // Exclude products associated with shops having status "PENDING" and "REVIEW_PENDING"
+            notIn: ["PENDING", "REVIEW_PENDING", "SUSPENDED"], // Exclude products associated with shops having status "PENDING" and "REVIEW_PENDING"
           },
         },
       },
@@ -109,8 +109,6 @@ const getAllProductsFromDB = async (query: ProductQueryParams) => {
 
 const getProductFromDB = async (productId: string) => {
   try {
-
-    
     // Fetch the product with the given ID
     const product = await prisma.product.findUnique({
       where: {
@@ -133,14 +131,10 @@ const getProductFromDB = async (productId: string) => {
     console.error("Error getting product:", error);
     throw new Error("Failed to get product. Please try again.");
   }
-}
-
+};
 
 const updateProductInDB = async (productId: string, updateData: any) => {
   try {
-
-
-    
     // Update the product with the given ID
     const updatedProduct = await prisma.product.update({
       where: {
@@ -187,11 +181,8 @@ const duplicateProductInDB = async (productId: any, updatedData: any) => {
       throw new Error("Product not found!");
     }
 
-  
-
     // Map only the necessary fields (imgPath and imgSize) for duplication
     const imagesToCreate = existingProduct.ProductImg.map((img: any) => {
-     
       return {
         imgPath: img.imgPath, // Only take the imgPath from the existing image
         imgSize: img.imgSize, // Only take the imgSize from the existing image
@@ -207,15 +198,14 @@ const duplicateProductInDB = async (productId: any, updatedData: any) => {
       category: updatedData.category || existingProduct.category,
       shopId: updatedData.shopId || existingProduct.shopId, // Use provided shopId or retain the existing one
       ProductImg: {
-        create:updatedData.images
-      ? updatedData.images.map((img: any) => ({
-          imgPath: img.path, // Use new images if provided
-          imgSize: img.size,
-        })): imagesToCreate, // Use the mapped image data for the new product
+        create: updatedData.images
+          ? updatedData.images.map((img: any) => ({
+              imgPath: img.path, // Use new images if provided
+              imgSize: img.size,
+            }))
+          : imagesToCreate, // Use the mapped image data for the new product
       },
     };
-
-   
 
     // Create the new duplicated product with the updated data
     const duplicatedProduct = await prisma.product.create({
@@ -230,8 +220,62 @@ const duplicateProductInDB = async (productId: any, updatedData: any) => {
   }
 };
 
+//track add recent product view by user
+
+const trackProductViewInDB = async (userId: JwtPayload, productId: any) => {
+  try {
+    // Check if the user has already viewed the product
+    const existingView = await prisma.recentproductview.findFirst({
+      where: {
+        productId: productId, // Match the product by its ID
+        userId: userId, // Match the user by their ID
+      },
+    });
+
+    // If the user has not viewed the product, create a new view record
+    if (!existingView) {
+      await prisma.recentproductview.create({
+        data: {
+          productId: productId, // Set the product ID
+          userId: userId, // Set the user ID
+        },
+      });
+    }
+
+    console.log("Product view tracked successfully");
+    return true; // Return true if the view is tracked successfully
+  } catch (error) {
+    console.error("Error tracking product view:", error);
+    throw new Error("Failed to track product view. Please try again.");
+  }
+};
 
 
+//get recent product view by user
+
+const getRecentProductViewFromDB = async (userId: JwtPayload) => {
+  try {
+    // Fetch the recent product views by the user
+    const recentViews = await prisma.recentproductview.findMany({
+      where: {
+        userId: userId, // Match the user by their ID
+      },
+      orderBy: {
+        createdAt: "desc", // Sort the views by creation date in descending order
+      },
+      take: 5, // Limit the number of recent views to 5
+      include: {
+        product: true, // Include related product data
+      },
+    });
+
+    console.log("Recent product views retrieved successfully");
+    return recentViews; // Return the recent product views fetched from the database
+  } catch (error) {
+    console.error("Error getting recent product views:", error);
+    throw new Error("Failed to get recent product views. Please try again.");
+  }
+}
 
 export const ProductService = {
   createProductIntoDB,
@@ -239,4 +283,6 @@ export const ProductService = {
   getProductFromDB,
   updateProductInDB,
   duplicateProductInDB,
+  trackProductViewInDB,
+  getRecentProductViewFromDB,
 };

@@ -56,6 +56,21 @@ router.post(
 
 router.get("/getProduct/:productId", productController.getProduct);
 
+//Track recent  products view by user
+router.post(
+  "/trackProductView/:productId",
+  authVerify(USER_ROLE.ADMIN, USER_ROLE.VENDOR, USER_ROLE.USER), // Verify the user is authenticated
+  productController.trackProductView
+);
+
+//get recent products view by user
+
+router.get("/recentProductView",
+  
+  authVerify(USER_ROLE.ADMIN, USER_ROLE.VENDOR,USER_ROLE.USER), // Verify the user is authenticated
+  productController.getRecentProductView);
+
+
 
 
 export const productRoutes = router;

@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { ProductService } from "./product.service";
+import { JwtPayload } from "jsonwebtoken";
 
 //products create
 
@@ -212,10 +213,67 @@ const productDuplicate = catchAsync(async (req, res) => {
   }
 });
 
+// Track product view
+
+const trackProductView = catchAsync(async (req, res) => {
+
+  try {
+     const userId = req.user as JwtPayload;
+    const { productId } = req.params; // Extract the productId from the request body
+
+    // Track the product view
+    await ProductService.trackProductViewInDB(userId, productId);
+
+    // Send the response with the success message
+    sendResponse(res, {
+      statusCode: StatusCodes.OK, // 200 status for successful request
+      success: true,
+      message: "Product view tracked successfully", // Success message
+    });
+  } catch (error) {
+    console.error("Error tracking product view:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error tracking product view", // Return an error message
+    });
+  }
+});
+
+
+//get recent product view by user
+
+const getRecentProductView = catchAsync(async (req, res) => {
+  try {
+    const userId = req.user as JwtPayload;
+    // Fetch the recent product views from the database
+    const recentViews = await ProductService.getRecentProductViewFromDB(userId);
+
+    // Send the response with the recent product views
+    sendResponse(res, {
+      statusCode: StatusCodes.OK, // 200 status for successful request
+      success: true,
+      message: "Recent product views retrieved successfully", // Success message
+      data: recentViews, // Send the recent product views as the response
+    });
+  } catch (error) {
+    console.error("Error getting recent product views:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error getting recent product views", // Return an error message
+    });
+  }
+});
+
+
+
+
+
+
+
 export const productController = {
   productCreate,
   getAllProducts,
   getProduct,
   productUpdate,
   productDuplicate,
+  trackProductView,
+  getRecentProductView,
 };
