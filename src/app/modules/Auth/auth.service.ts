@@ -52,7 +52,7 @@ const signUpUser = async (payload: TUser) => {
       // Update the user if they are not verified
       name: payload.name,
       password: hashedPassword,
-      phone: payload.phone,
+      
 
       verificationCode: otp.toString(),
       otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
@@ -62,7 +62,7 @@ const signUpUser = async (payload: TUser) => {
       name: payload.name,
       email: payload.email,
       password: hashedPassword,
-      phone: payload.phone,
+    
       role: payload.role,
     
       verificationCode: otp.toString(),
@@ -92,7 +92,7 @@ const logInUser = async (payload: { email: string; password: string }) => {
       role: true,
       userId: true,
       name: true,
-      phone: true,
+
       status: true,
       otpVerified: true,
     }, // Select only necessary fields
@@ -162,7 +162,7 @@ const OtpVerifyFromDB = async (payload: {
         role: true,
         userId: true,
         name: true,
-        phone: true,
+        
         verificationCode: true, // OTP stored in the database
         otpExpiresAt: true,
         otpVerified: true, // Expiry time for OTP

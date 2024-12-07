@@ -222,10 +222,10 @@ const duplicateProductInDB = async (productId: any, updatedData: any) => {
 
 //track add recent product view by user
 
-const trackProductViewInDB = async (userId: JwtPayload, productId: any) => {
+const trackProductViewInDB = async (userId:any, productId: any) => {
   try {
     // Check if the user has already viewed the product
-    const existingView = await prisma.recentproductview.findFirst({
+    const existingView = await prisma.recentProductView.findFirst({
       where: {
         productId: productId, // Match the product by its ID
         userId: userId, // Match the user by their ID
@@ -234,7 +234,7 @@ const trackProductViewInDB = async (userId: JwtPayload, productId: any) => {
 
     // If the user has not viewed the product, create a new view record
     if (!existingView) {
-      await prisma.recentproductview.create({
+      await prisma.recentProductView.create({
         data: {
           productId: productId, // Set the product ID
           userId: userId, // Set the user ID
@@ -253,17 +253,17 @@ const trackProductViewInDB = async (userId: JwtPayload, productId: any) => {
 
 //get recent product view by user
 
-const getRecentProductViewFromDB = async (userId: JwtPayload) => {
+const getRecentProductViewFromDB = async (userId:any) => {
   try {
     // Fetch the recent product views by the user
-    const recentViews = await prisma.recentproductview.findMany({
+    const recentViews = await prisma.recentProductView.findMany({
       where: {
         userId: userId, // Match the user by their ID
       },
       orderBy: {
-        createdAt: "desc", // Sort the views by creation date in descending order
+        viewedAt: "desc", // Sort the views by the correct field name in descending order
       },
-      take: 5, // Limit the number of recent views to 5
+      take: 10, // Limit the number of recent views to 5
       include: {
         product: true, // Include related product data
       },

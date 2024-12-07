@@ -245,7 +245,7 @@ const getRecentProductView = catchAsync(async (req, res) => {
   try {
     const userId = req.user as JwtPayload;
     // Fetch the recent product views from the database
-    const recentViews = await ProductService.getRecentProductViewFromDB(userId);
+    const recentViews = await ProductService.getRecentProductViewFromDB(userId as JwtPayload);
 
     // Send the response with the recent product views
     sendResponse(res, {

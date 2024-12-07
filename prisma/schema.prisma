@@ -1,11 +1,13 @@
+// schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // Your main Heroku database URL
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL") // Shadow database URL
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 enum Role {
@@ -33,28 +35,39 @@ enum IsDeleted {
 }
 
 model User {
-  userId         String    @id @default(uuid()) @db.Uuid // Primary key with UUID
+  userId         String    @id @default(uuid()) @db.Uuid
   name           String
-  email          String    @unique                      // Unique email for each user
+  email          String    @unique
   password       String
-  phone          String?   @unique                      // Unique phone number for the user
-  role           Role      @default(USER)               // Role of the user (Admin, Vendor, etc.)
-  profileImg     String?  // Profile image (single image)
-  status         Status    @default(PENDING)            // User status (e.g., pending, active, suspended)
-  isDeleted      IsDeleted @default(FALSE)              // Flag for soft deletion
-  createdAt      DateTime  @default(now())              // Creation timestamp
-  updatedAt      DateTime  @updatedAt                   // Auto-updated on modification
-  verificationCode String? @db.VarChar(6)               // OTP verification code
-  otpExpiresAt     DateTime?                           // OTP expiration time
-  otpVerified      Boolean  @default(false)             // Whether the OTP is verified
-  shops           Shop[]   // One-to-many relation with Shop (User can own many Shops)
-  payments        Payment[] // One-to-many relation with Payment
-
-  Review Review[]
-
+  role           Role      @default(USER)
+  profileImg     String?
+  status         Status    @default(PENDING)
+  isDeleted      IsDeleted @default(FALSE)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  verificationCode String? @db.VarChar(6)
+  otpExpiresAt   DateTime?
+  otpVerified    Boolean   @default(false)
+  shops          Shop[]
+  payments       Payment[]
+  Review         Review[]
   RecentProductView RecentProductView[]
+  Order          Order[]
+  Address        Address?
 }
-
+model Address {
+  addressId    String    @id @default(uuid()) @db.Uuid
+  phone        String
+  street       String
+  city         String
+  state        String
+  postalCode   String
+  country      String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  userId       String    @unique @db.Uuid
+  user         User      @relation(fields: [userId], references: [userId])
+}
 
 model Product {
   productId   String    @id @default(uuid()) @db.Uuid
@@ -69,81 +82,71 @@ model Product {
   isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
- 
-  ProductImg  ProductImg[] // Relation to ProductImg (one-to-many)
-
-  shopId      String      @db.Uuid // Correct data type for UUID
-  shop        Shop        @relation(fields: [shopId], references: [shopId]) // Relation to Shop
-
-  Payment Payment[]
-
-  Review Review[]
-
+  ProductImg  ProductImg[]
+  shopId      String      @db.Uuid
+  shop        Shop        @relation(fields: [shopId], references: [shopId])
+  Payment     Payment[]
+  Review      Review[]
   RecentProductView RecentProductView[]
+
+
+  Order Order[]
 }
+
 model ProductImg {
   imgId     String   @id @default(uuid()) @db.Uuid
   imgPath   String
   imgSize   Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
   productId String @db.Uuid
   product   Product @relation(fields: [productId], references: [productId])
-
-
-  
 }
 
 model Review {
   reviewId    String   @id @default(uuid()) @db.Uuid
-  rating      Int      // Rating given by the user (1 to 5 scale)
-  reviewText  String   // Review text
-  createdAt   DateTime @default(now()) // When the review was created
-  updatedAt   DateTime @updatedAt // When the review was last updated
-
-  userId      String   @db.Uuid // Foreign key for the User who wrote the review
+  rating      Int
+  reviewText  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String   @db.Uuid
   user        User     @relation(fields: [userId], references: [userId])
-
-  productId   String   @db.Uuid // Foreign key for the Product being reviewed
+  productId   String   @db.Uuid
   product     Product  @relation(fields: [productId], references: [productId])
 }
 
-
-
 model Shop {
-  shopId      String    @id @default(uuid()) @db.Uuid // Primary key as UUID
+  shopId      String    @id @default(uuid()) @db.Uuid
   name        String
   description String
-  status      Shop_Status @default(PENDING)         // Shop status (e.g., active, pending)
-  isDeleted   Boolean   @default(false)              // Flag for soft deletion
+  status      Shop_Status @default(PENDING)
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String   @db.Uuid
+  user        User      @relation(fields: [userId], references: [userId])
+  logo        Logo[]
+  products    Product[]
 
-  createdAt   DateTime  @default(now())              // Creation timestamp
-  updatedAt   DateTime  @updatedAt                   // Auto-updated on modification
 
-  userId      String   @db.Uuid       // Foreign key referencing User
-  user        User      @relation(fields: [userId], references: [userId]) // User who owns the shop
-  logo  Logo[] 
-  products    Product[] // One-to-many relation with Product (A shop can have many products)
-
-  
+  Order Order[]
 }
+
 model Payment {
-  paymentId      String    @id @default(uuid()) @db.Uuid // Primary key with UUID
-  userId         String   @db.Uuid                     // Correct data type for UUID
-  productId      String  @db.Uuid     
+  paymentId      String    @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  productId      String  @db.Uuid
   amount         Float
   isPaid         Boolean   @default(false)
   paymentDate    DateTime
-
-  createdAt      DateTime  @default(now())              // Timestamp for creation
-  updatedAt      DateTime  @updatedAt                   // Automatically updated on modification
-
-  user           User      @relation(fields: [userId], references: [userId]) // Relation to User
-  product        Product   @relation(fields: [productId], references: [productId]) // Relation to Product
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [userId])
+  product        Product   @relation(fields: [productId], references: [productId])
 }
+
 model Logo {
-  logoId       String    @id @default(uuid()) @db.Uuid 
+  logoId       String    @id @default(uuid()) @db.Uuid
   imgPath      String
   imgSize      Int
   shopId       String @db.Uuid
@@ -151,11 +154,45 @@ model Logo {
 }
 
 model RecentProductView {
-  ViewId        String   @id @default(uuid()) // Unique ID for each record
-  userId    String          @db.Uuid
-  productId  String      @db.Uuid
-  viewedAt  DateTime @default(now()) // Timestamp when the product was viewed
-  user      User     @relation(fields: [userId], references: [userId])
-  product   Product  @relation(fields: [productId], references: [productId])
+  ViewId        String   @id @default(uuid())
+  userId        String   @db.Uuid
+  productId     String   @db.Uuid
+  viewedAt      DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [userId])
+  product       Product  @relation(fields: [productId], references: [productId])
 }
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+
+
+model Order {
+  orderId        String       @id @default(uuid()) @db.Uuid
+  userId         String       @db.Uuid
+  user           User         @relation(fields: [userId], references: [userId])
+  orderDate      DateTime     @default(now())
+  status         OrderStatus  @default(PENDING)
+  totalAmount    Float
+  paymentMethod  String       // More consistent naming (camelCase)
+  paymentStatus  String       @default("PENDING")
+  
+  productId      String       @db.Uuid
+  product        Product      @relation(fields: [productId], references: [productId])
+
+  shopId         String       @db.Uuid
+  shop           Shop         @relation(fields: [shopId], references: [shopId])
+
+  updatedAt      DateTime     @updatedAt
+}
+
+
+
+
+
 
