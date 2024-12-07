@@ -120,12 +120,14 @@ model Shop {
   name        String
   description String
   status      Shop_Status @default(PENDING)
+  logoImgPath      String
+  logoImgSize      Int
   isDeleted   Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   userId      String   @db.Uuid
-  user        User      @relation(fields: [userId], references: [userId])
-  logo        Logo[]
+  Owner        User      @relation(fields: [userId], references: [userId])
+ 
   products    Product[]
 
 
@@ -145,13 +147,7 @@ model Payment {
   product        Product   @relation(fields: [productId], references: [productId])
 }
 
-model Logo {
-  logoId       String    @id @default(uuid()) @db.Uuid
-  imgPath      String
-  imgSize      Int
-  shopId       String @db.Uuid
-  shop         Shop   @relation(fields: [shopId], references: [shopId])
-}
+
 
 model RecentProductView {
   ViewId        String   @id @default(uuid())
@@ -174,11 +170,13 @@ enum OrderStatus {
 
 model Order {
   orderId        String       @id @default(uuid()) @db.Uuid
-  userId         String       @db.Uuid
-  user           User         @relation(fields: [userId], references: [userId])
+  customerId         String       @db.Uuid
+  customer           User         @relation(fields: [customerId], references: [userId])
   orderDate      DateTime     @default(now())
   status         OrderStatus  @default(PENDING)
+  quantity       Int
   totalAmount    Float
+  discountSave Float?
   paymentMethod  String       // More consistent naming (camelCase)
   paymentStatus  String       @default("PENDING")
   

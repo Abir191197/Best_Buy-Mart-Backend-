@@ -42,7 +42,7 @@ const productCreate = catchAsync(async (req, res) => {
   } catch (error) {
     console.error("Error creating product:", error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Error creating product", // Return an error message
+      message: "Error creating product: " + (error as Error).message, // Return an error message
     });
   }
 });

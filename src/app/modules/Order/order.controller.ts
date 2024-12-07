@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
-import sendResponse from "../../utils/sendResponse";
 import catchAsync from "../../utils/catchAsync";
+import sendResponse from "../../utils/sendResponse";
 import { orderService } from "./order.service";
 
 const createOrder = catchAsync(async (req, res) => {
@@ -23,9 +23,89 @@ const createOrder = catchAsync(async (req, res) => {
     // Send error response
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: error instanceof Error ? error.message : "Failed to create order",
+      message:
+        error instanceof Error ? error.message : "Failed to create order",
     });
   }
 });
 
-export const orderController = { createOrder };
+const getAllForOrdersAdmin = catchAsync(async (req, res) => {
+  try {
+    // Retrieve all orders from the service
+    const orders = await orderService.getAllOrdersForAdminFromDB();
+
+    // Send success response
+    sendResponse(res, {
+      statusCode: StatusCodes.OK, // 200 OK
+      success: true,
+      message: "Orders retrieved successfully",
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Error retrieving orders:", error);
+
+    // Send error response
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to retrieve orders",
+    });
+  }
+});
+
+const getAllForOrdersVendor = catchAsync(async (req, res) => {
+  try {
+    const user = req.user;
+    const orders = await orderService.getAllOrdersForVendorFromDB(user);
+
+    // Send success response
+    sendResponse(res, {
+      statusCode: StatusCodes.OK, // 200 OK
+      success: true,
+      message: "Orders retrieved successfully",
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Error retrieving orders:", error);
+
+    // Send error response
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to retrieve orders",
+    });
+  }
+});
+
+const getAllOrderForCustomer = catchAsync(async (req, res) => {
+  try {
+    const user = req.user;
+    const orders = await orderService.getAllOrdersForCustomerFromDB(user);
+
+    // Send success response
+    sendResponse(res, {
+      statusCode: StatusCodes.OK, // 200 OK
+      success: true,
+      message: "Orders retrieved successfully",
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Error retrieving orders:", error);
+
+    // Send error response
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to retrieve orders",
+    });
+  }
+});
+
+
+
+export const orderController = {
+  createOrder,
+  getAllForOrdersAdmin,
+  getAllForOrdersVendor,
+  getAllOrderForCustomer,
+};

@@ -12,7 +12,22 @@ router.post("/",
 )
 
 
+router.get(
+  "/getAllForOrdersAdmin",
+  authVerify(USER_ROLE.ADMIN),
+  orderController.getAllForOrdersAdmin
+);
 
+router.get("/getAllForOrdersVendor",
+    authVerify(USER_ROLE.VENDOR),
+    orderController.getAllForOrdersVendor
+)
+
+router.get(
+  "/getAllOrderForCustomer",
+  authVerify(USER_ROLE.USER),
+  orderController.getAllOrderForCustomer
+);
 
 
 
