@@ -5,7 +5,10 @@ import { PaymentService } from "./payment.service";
 
 const validatePayment = catchAsync(async (req, res) => {
   const validData = req.body; // SSLCommerz sends data via POST in the body
-  console.log("Received IPN Data:", validData);
+    console.log("Received IPN Data:", validData);
+    console.log(req.headers);
+    console.log(req.params);
+    console.log(req.query);
 
   // Call the service to validate the payment
   const result = await PaymentService.validatePaymentIntoDB(validData);
