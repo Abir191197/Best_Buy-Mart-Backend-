@@ -1,68 +1,95 @@
-// import axios from "axios";
-// import config from "../../../config";
+import axios from "axios";
+import { StatusCodes } from "http-status-codes";
+import config from "../../../config";
+import AppError from "../../Error/appError";
 
-// const url = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"; // SSLCOMMERZ initiation API URL
+interface PaymentResponse {
+  GatewayPageURL: string;
+  [key: string]: any; // To handle any other properties that might be returned
+}
+
+const Payment = async (paymentData: any) => {
+  try {
+    const data = {
+      store_id: config.STORE_ID,
+      store_passwd: config.STORE_SECRET,
+      total_amount: paymentData.amount,
+      currency: "BDT",
+      tran_id: paymentData.transactionId, // Unique transaction ID for the API call
+      success_url: config.PAYMENT_SUCCESS_URL,
+      fail_url: config.PAYMENT_FAIL_URL,
+      cancel_url: config.PAYMENT_CANCEL_URL,
+      ipn_url: config.PAYMENT_IPN_URL, // Replace with your IPN URL
+      shipping_method: "N/A",
+      product_name: paymentData.productName,
+      product_category: paymentData.productCategory,
+      product_profile: "general",
+      cus_name: paymentData.name,
+      cus_email: paymentData.email,
+      cus_add1: paymentData.address,
+      cus_add2: "N/A",
+      cus_city: paymentData.city || "N/A",
+      cus_state: paymentData.state || "N/A",
+      cus_postcode: paymentData.postalCode || "N/A",
+      cus_country: paymentData.country || "Bangladesh",
+      cus_phone: paymentData.phoneNumber,
+      cus_fax: "N/A",
+      ship_name: "N/A",
+      ship_add1: "N/A",
+      ship_add2: "N/A",
+      ship_city: "N/A",
+      ship_state: "N/A",
+      ship_postcode: "N/A",
+      ship_country: "N/A",
+    };
+
+    console.log(data);
+
+    const response = await axios.post<PaymentResponse>(
+      config.STORE_URL as string,
+      data,
+      {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      }
+    );
+
+    if (response?.data) {
+      return response.data; // Return Gateway Page URL
+    } else {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        "Failed to retrieve GatewayPageURL from the response"
+      );
+    }
+  } catch (error) {
+    // Improved error handling
+    console.error(
+      "Payment request error:",
+      (error as any).response?.data || (error as any).message
+    );
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      (error as any).response?.data?.error || "Payment Error occurred!"
+    );
+  }
+};
+
+const validatePayment = async (payload: any) => {
+  try {
+    const response = await axios({
+      method: "GET",
+      url: `${config.PAYMENT_VALIDATION_URL}?val_id=${payload.val_id}&store_id=${config.STORE_ID}&store_passwd=${config.STORE_SECRET}&format=json`,
+    });
+    console.log("valid",response.data);
+    return response.data;
+  } catch (err) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Payment validation failed!");
+  }
+};
+
+export const SSLService = {
+  Payment,
+  validatePayment,
+};
 
 
-// export async function createPaymentSession(paymentData: {
-//   bookingId: string;
-//   UserData: {
-//     name: string;
-//     email: string;
-//     address: string;
-//     phone: string;
-//   };
-// }) {
-//   // Ensure environment variables are present
-//   if (!config.STORE_ID || !config.STORE_SECRET) {
-//     throw new Error("Missing store credentials in configuration.");
-//   }
-
-//   // Construct the payload
-//   const payload = ({
-//     store_id: config.STORE_ID,
-//     store_passwd: config.STORE_SECRET,
-//     tran_id: paymentData.bookingId,
-//     total_amount: "100",
-//     currency: "BDT",
-//     success_url: `https://yourdomain.com/success?bookingId=${paymentData.bookingId}`,
-//     fail_url: `https://yourdomain.com/fail?bookingId=${paymentData.bookingId}`,
-//     cancel_url: `https://yourdomain.com/cancel?bookingId=${paymentData.bookingId}`,
-//     cus_name: paymentData.UserData.name,
-//     cus_email: paymentData.UserData.email,
-//     cus_add1: paymentData.UserData.address,
-//     cus_phone: paymentData.UserData.phone,
-//     ship_name: paymentData.UserData.name,
-//     ship_add1: paymentData.UserData.address,
-//     ship_city: "dhaka",
-//     ship_state: "dhaka",
-//     ship_postcode: "1212",
-//     ship_country: "bangladesh",
-//     multi_card_name: "mastercard,visacard,amexcard",
-//     value_a: "ref001_A",
-//     value_b: "ref002_B",
-//     value_c: "ref003_C",
-//     value_d: "ref004_D",
-//     shipping_method: "ref005_E",
-//     product_name: "cloth",
-//     product_category: "cloth",
-//     product_profile: "physical-goods",
-//   });
-
-//   try {
-//     // Send POST request
-//     const response = await axios.post(url, payload, );
-
-//     // Check if the response contains an error
-//     if (response.data.status === "FAILED") {
-//       throw new Error(
-//         `Payment initiation failed: ${response.data.failedreason}`
-//       );
-//     }
-
-//     return response.data; // Successful response
-//   } catch (error) {
-//     console.error("Error creating payment session:", error.message || error);
-//     throw error;
-//   }
-// }

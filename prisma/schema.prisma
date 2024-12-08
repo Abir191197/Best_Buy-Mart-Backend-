@@ -170,6 +170,7 @@ enum OrderStatus {
 
 model Order {
   orderId        String       @id @default(uuid()) @db.Uuid
+  trackingId     String?
   customerId         String       @db.Uuid
   customer           User         @relation(fields: [customerId], references: [userId])
   orderDate      DateTime     @default(now())

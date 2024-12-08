@@ -19,7 +19,7 @@ const findUserFromDB = async (payload: JwtPayload | null) => {
             userId: true,
             email: true,
             name: true,
-            phone: true,
+           
             role: true,
             profileImg: true,
             status: true,
@@ -51,7 +51,7 @@ const updatedUserIntoDB = async (
           userId: true,
           email: true,
           name: true,
-          phone: true,
+         
           role: true,
           profileImg: true,
           status: true,

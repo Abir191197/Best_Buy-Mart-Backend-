@@ -16,8 +16,12 @@ export default {
   STORE_ID: process.env.store_id,
   STORE_SECRET: process.env.store_passwd,
   STORE_URL: process.env.store_url,
+  PAYMENT_VALIDATION_URL: process.env.validation_url,
+  PAYMENT_IPN_URL: process.env.PAYMENT_IPN,
   is_live: process.env.is_live,
+  PAYMENT_SUCCESS_URL: process.env.PAYMENT_SUCCESS_URL,
+  PAYMENT_FAIL_URL: process.env.PAYMENT_FAIL_URL,
+  PAYMENT_CANCEL_URL: process.env.PAYMENT_CANCEL_URL,
   AWS_SECRET_ACCESS_KEY: process.env.Secret_key,
   AWS_ACCESS_KEY: process.env.Access_key,
-  
 };

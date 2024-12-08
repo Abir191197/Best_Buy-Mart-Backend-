@@ -6,6 +6,7 @@ import { productRoutes } from "../modules/Product/product.route";
 import path from "path";
 import { shopRoutes } from "../modules/Shop/shop.route";
 import { orderRoutes } from "../modules/Order/order.route";
+import { paymentRoute } from "../modules/Payment/payment.route";
 
 
 const router = express.Router();
@@ -21,13 +22,18 @@ const moduleRoutes = [
   },
   {
     path: "/shop",
-    route:shopRoutes
+    route: shopRoutes,
   },
   {
     path: "/order",
-    route:orderRoutes
-  }
+    route: orderRoutes,
+  },
+  {
+    path: "/payment",
+    route: paymentRoute,
+  },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 export default router;
+

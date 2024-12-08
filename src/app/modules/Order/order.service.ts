@@ -1,29 +1,53 @@
 import { PrismaClient } from "@prisma/client";
+import { SSLService } from "../Payment/payment.utils";
+import AppError from "../../Error/appError";
+import { StatusCodes } from "http-status-codes";
 
 const prisma = new PrismaClient();
 
-const createOrderIntoDB = async (orderData: any) => {
-  const {
-    userId,
-    shopId,
-    productId,
-    quantity,
-    paymentMethod,
-    discountSave,
-  } = orderData;
+// Create Order Function
+export const createOrderIntoDB = async (orderData: any) => {
+  const { userId, shopId, productId, quantity, paymentMethod, discountSave } =
+    orderData;
 
-  // Retrieve product details to calculate price and validate availability
+  // Retrieve user details
+  const userDetail = await prisma.user.findUnique({
+    where: { userId },
+    select: {
+      Address: true,
+      name: true,
+      email: true,
+    },
+  });
+
+  if (!userDetail) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  const userAddress = {
+    street: userDetail?.Address?.street || "N/A",
+    city: userDetail?.Address?.city || "N/A",
+    state: userDetail?.Address?.state || "N/A",
+    country: userDetail?.Address?.country || "Bangladesh",
+    postalCode: userDetail?.Address?.postalCode || "N/A",
+    phone: userDetail?.Address?.phone || "N/A",
+  };
+
+  // Retrieve product details
   const product = await prisma.product.findUnique({
     where: { productId },
   });
 
   if (!product) {
-    throw new Error("Product not found");
+    throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
   }
 
   // Check if there's sufficient stock
   if (product.stock < quantity) {
-    throw new Error("Insufficient stock for the product");
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      "Insufficient stock for the product"
+    );
   }
 
   // Calculate the total price
@@ -32,28 +56,48 @@ const createOrderIntoDB = async (orderData: any) => {
     ? parseFloat((priceBeforeDiscount - discountSave).toFixed(2))
     : parseFloat(priceBeforeDiscount.toFixed(2));
 
-  // Create the order
+  // Create the order in the database
   const order = await prisma.order.create({
     data: {
+      trackingId: `ORD-${Date.now()}`, // Generate a unique order ID
       customerId: userId,
       shopId,
       productId,
       quantity,
       totalAmount: totalPrice,
-      discountSave: parseFloat(discountSave) || 0, // Store discount if present
+      discountSave: parseFloat(discountSave) || 0, // Discount applied
       paymentMethod,
-      status: "PENDING", // Default status is PENDING
+      status: "PENDING", // Default status
       orderDate: new Date(),
     },
   });
 
-  // Reduce product stock
-  await prisma.product.update({
-    where: { productId },
-    data: { stock: product.stock - quantity },
-  });
+  try {
+    // Payment integration
+    const paymentResponse = await SSLService.Payment({
+      amount: totalPrice,
+      transactionId: order.trackingId,
+      name: userDetail.name,
+      email: userDetail.email,
+      address: `${userAddress.street}, ${userAddress.city}, ${userAddress.state}, ${userAddress.postalCode}`,
+      phoneNumber: userAddress.phone,
+      productName: product.name,
+      productCategory: product.category || "General", // Default category if not provided
+    });
 
-  return order; // Return the created order
+    console.log("Payment response:", paymentResponse);
+
+
+  
+    return { order, paymentResponse }; // Return the created order and payment response
+  } catch (error) {
+    // Rollback: Delete the order if payment fails
+    //await prisma.order.delete({ where: { orderId: order.orderId } });
+    throw new AppError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      "Payment failed, order rolled back"
+    );
+  }
 };
 
 
