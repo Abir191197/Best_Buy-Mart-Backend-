@@ -5,8 +5,9 @@ import sendResponse from "../../utils/sendResponse";
 import { PaymentService } from "./payment.service";
 
 const validatePayment = catchAsync(async (req, res) => {
-     console.log(req.query);
-  const result = await PaymentService.validatePaymentIntoDB(req.query as any);
+    const validData = req.body;
+    console.log(validData);
+  const result = await PaymentService.validatePaymentIntoDB(validData);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
