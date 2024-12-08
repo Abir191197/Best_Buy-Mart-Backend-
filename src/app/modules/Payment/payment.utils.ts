@@ -19,7 +19,7 @@ const Payment = async (paymentData: any) => {
       success_url: config.PAYMENT_SUCCESS_URL,
       fail_url: config.PAYMENT_FAIL_URL,
       cancel_url: config.PAYMENT_CANCEL_URL,
-      ipn_url: `config.PAYMENT_IPN_URL${paymentData.transactionId}`, // Replace with your IPN URL
+      ipn_url: `config.PAYMENT_IPN_URL/${paymentData.transactionId}`, // Replace with your IPN URL
       shipping_method: "N/A",
       product_name: paymentData.productName,
       product_category: paymentData.productCategory,
