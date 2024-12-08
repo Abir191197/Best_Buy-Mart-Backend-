@@ -7,7 +7,7 @@ const router = express.Router();
 
 //get order from user
 
-router.get(
+router.post(
   "/ipn",
   
   PaymentController.validatePayment

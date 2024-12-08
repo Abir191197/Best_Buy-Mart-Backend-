@@ -54,7 +54,7 @@ const Payment = async (paymentData: any) => {
     );
 
     if (response?.data) {
-      return response.data; // Return Gateway Page URL
+      return response.data.GatewayPageURL; // Return Gateway Page URL
     } else {
       throw new AppError(
         StatusCodes.BAD_REQUEST,
