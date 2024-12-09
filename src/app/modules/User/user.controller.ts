@@ -88,9 +88,35 @@ const updatedUser = catchAsync(async (req, res) => {
   }
 });
 
+// Controller to handle changing a user's status
+
+const changeUserStatus = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const result = await UserService.changeUserStatusInDB(userId, status);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "User status updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    sendResponse(res, {
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      success: false,
+      message: "Failed to update user status",
+      data: null,
+    });
+  }
+});
+
 
 export const userControllers = {
- 
   findUser,
   updatedUser,
+  changeUserStatus,
 };

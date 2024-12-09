@@ -33,6 +33,13 @@ router.put(
   userControllers.updatedUser
 );
 
+//admin change user status
+
+router.put(
+  "/status/:userId",
+  authVerify(USER_ROLE.ADMIN),
+  userControllers.changeUserStatus
+);
 
 
 

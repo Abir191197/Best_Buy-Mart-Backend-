@@ -1,6 +1,6 @@
 import { JwtPayload } from "jsonwebtoken";
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Status } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
 import AppError from "../../Error/appError";
 import { TUser } from "./user.interface";
@@ -42,6 +42,8 @@ const findUserFromDB = async (payload: JwtPayload | null) => {
     throw new AppError(StatusCodes.BAD_REQUEST, "Failed to Get User");
   }
 };
+
+
 
 const updatedUserIntoDB = async (
   payload: JwtPayload | null,
@@ -86,7 +88,20 @@ const updatedUserIntoDB = async (
   }
 };
 
+// Function to change the status of a user
+
+const changeUserStatusInDB = async (userId: string, newStatus: Status) => {
+  const updatedUser = await prisma.user.update({
+    where: { userId: userId },
+    data: { status: newStatus }, // Update the user's status
+  });
+  return updatedUser;
+};
+
+
+
 export const UserService = {
   findUserFromDB,
   updatedUserIntoDB,
+  changeUserStatusInDB,
 };
