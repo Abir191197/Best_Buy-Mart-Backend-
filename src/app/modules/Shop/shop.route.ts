@@ -24,6 +24,7 @@ router.get("/getAllShop",
  authVerify(USER_ROLE.ADMIN), // Verify the user is authenticated
   shopController.getAllShop); 
 
+  //get single shop 
 router.get("/getMyShop/:id",
   //authVerify(USER_ROLE.VENDOR),
   shopController.getMyAllShopForVendor
@@ -36,6 +37,8 @@ router.put(
   shopController.approveShopByAdmin
 );
 
+
+//update shop
 router.put(
   "/shopUpdate/:ShopId",
   //authVerify(USER_ROLE.VENDOR),

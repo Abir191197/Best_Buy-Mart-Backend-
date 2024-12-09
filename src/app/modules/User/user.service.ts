@@ -9,37 +9,64 @@ const prisma = new PrismaClient();
 
 const findUserFromDB = async (payload: JwtPayload | null) => {
   try {
-    if (payload !== null) {
-      const result = await prisma.user.findUnique({
-        where: { email: payload.email },
-        select: {
-          userId: true,
-          email: true,
-          name: true,
-          role: true,
-          profileImgSrc: true,
-          profileImgSize: true,
-          phone: true,
-          street: true,
-          city: true,
-          state: true,
-          postalCode: true,
-          country: true,
-          status: true,
-          isDeleted: true,
-          createdAt: true,
-          updatedAt: true,
-          password: false,
-          shops: true,
-          RecentProductView: true,
-          Order: true,
-          Review: true,
-        },
-      });
-      return result;
+    // Check if the payload is null or undefined
+    if (!payload?.email) {
+      throw new AppError(StatusCodes.UNAUTHORIZED, "User is not authenticated");
     }
+
+    // Query Prisma to find the user by email
+    const result = await prisma.user.findUnique({
+      where: { email: payload.email },
+      select: {
+        userId: true,
+        email: true,
+        name: true,
+        role: true,
+        profileImgSrc: true,
+        profileImgSize: true,
+        phone: true,
+        street: true,
+        city: true,
+        state: true,
+        postalCode: true,
+        country: true,
+        status: true,
+        isDeleted: true,
+        createdAt: true,
+        updatedAt: true,
+        password: false,
+        shops: true,
+        RecentProductView: true,
+        Order: true,
+        Review: true,
+      },
+    });
+
+    // Check if the result is found
+    if (!result) {
+      throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+    }
+
+    // Handle case where user status is pending
+    if (result.status === "PENDING") {
+      throw new AppError(
+        StatusCodes.FORBIDDEN,
+        "User account is pending activation."
+      );
+    }
+
+    return result;
   } catch (error) {
-    throw new AppError(StatusCodes.BAD_REQUEST, "Failed to Get User");
+    // Handle different types of errors (Prisma errors, validation errors, etc.)
+    console.error("Error fetching user from DB:", error);
+    if (error instanceof AppError) {
+      throw error; // Re-throw custom AppError
+    } else {
+      throw new AppError(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "Failed to get user"
+      );
+    }
   }
 };
 
@@ -49,6 +76,7 @@ const updatedUserIntoDB = async (
   payload: JwtPayload | null,
   updateData: Partial<TUser>
 ) => {
+  
   try {
     if (payload && payload.email) {
       const updatedUser = await prisma.user.update({

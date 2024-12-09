@@ -14,9 +14,15 @@ export const createOrderIntoDB = async (orderData: any) => {
   const userDetail = await prisma.user.findUnique({
     where: { userId },
     select: {
-      Address: true,
+      phone: true,
       name: true,
       email: true,
+      street: true,
+      city: true,
+      country: true,
+      postalCode: true,
+      state: true,
+
     },
   });
 
@@ -25,12 +31,12 @@ export const createOrderIntoDB = async (orderData: any) => {
   }
 
   const userAddress = {
-    street: userDetail?.Address?.street || "N/A",
-    city: userDetail?.Address?.city || "N/A",
-    state: userDetail?.Address?.state || "N/A",
-    country: userDetail?.Address?.country || "Bangladesh",
-    postalCode: userDetail?.Address?.postalCode || "N/A",
-    phone: userDetail?.Address?.phone || "N/A",
+    street: userDetail?.street || "N/A",
+    city: userDetail?.city || "N/A",
+    state: userDetail?.state || "N/A",
+    country: userDetail?.country || "Bangladesh",
+    postalCode: userDetail?.postalCode || "N/A",
+    phone: userDetail?.phone || "N/A",
   };
 
   // Retrieve product details

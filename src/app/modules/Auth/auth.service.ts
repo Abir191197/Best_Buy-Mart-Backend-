@@ -109,6 +109,12 @@ const logInUser = async (payload: { email: string; password: string }) => {
       "User account is pending activation."
     );
   }
+  if (user.status === "SUSPENDED") {
+    throw new AppError(
+      StatusCodes.FORBIDDEN,
+      "User account is SUSPENDED contact to Admin for more details."
+    );
+  }
   if (!user.otpVerified) {
     throw new AppError(
       StatusCodes.FORBIDDEN,
