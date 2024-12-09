@@ -114,9 +114,34 @@ const changeUserStatus = catchAsync(async (req, res) => {
   }
 });
 
+//create createCategories
+
+const createCategories = catchAsync(async (req, res) => {
+  const { category } = req.body;
+
+  try {
+    const result = await UserService.createCategoriesInDB(category);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Category created successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error creating category:", error);
+    sendResponse(res, {
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      success: false,
+      message: "Failed to create category",
+      data: null,
+    });
+  }
+});
 
 export const userControllers = {
   findUser,
   updatedUser,
   changeUserStatus,
+  createCategories,
 };

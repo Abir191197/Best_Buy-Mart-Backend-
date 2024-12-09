@@ -41,7 +41,13 @@ router.put(
   userControllers.changeUserStatus
 );
 
+//admin create categories
 
+router.post(
+  "/createCategories",
+  //authVerify(USER_ROLE.ADMIN),
+  userControllers.createCategories
+);
 
 
 

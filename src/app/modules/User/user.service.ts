@@ -70,13 +70,10 @@ const findUserFromDB = async (payload: JwtPayload | null) => {
   }
 };
 
-
-
 const updatedUserIntoDB = async (
   payload: JwtPayload | null,
   updateData: Partial<TUser>
 ) => {
-  
   try {
     if (payload && payload.email) {
       const updatedUser = await prisma.user.update({
@@ -126,10 +123,20 @@ const changeUserStatusInDB = async (userId: string, newStatus: Status) => {
   return updatedUser;
 };
 
+//create categories
 
+const createCategoriesInDB = async (category: string) => {
+  const result = await prisma.category.create({
+    data: {
+      category: category,
+    },
+  });
+  return result;
+};
 
 export const UserService = {
   findUserFromDB,
   updatedUserIntoDB,
   changeUserStatusInDB,
+  createCategoriesInDB,
 };
