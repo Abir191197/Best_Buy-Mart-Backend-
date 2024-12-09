@@ -4,6 +4,8 @@ import { PaymentController } from "./payment.controller";
 const router = express.Router();
 
 // IPN Route
-router.get("/ipn", PaymentController.validatePayment);
+router.post("/ipn", PaymentController.validatePayment);
+
+router.post("/success", PaymentController.paymentSuccess);
 
 export const paymentRoute = router;

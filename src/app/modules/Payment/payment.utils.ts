@@ -15,11 +15,15 @@ const Payment = async (paymentData: any) => {
       store_passwd: config.STORE_SECRET,
       total_amount: paymentData.amount,
       currency: "BDT",
-      tran_id: paymentData.transactionId, // Unique transaction ID for the API call
-      success_url: config.PAYMENT_SUCCESS_URL,
+      tran_id: paymentData.transactionId,
+      success_url: `${config.PAYMENT_SUCCESS_URL}?transactionId=${
+        paymentData.transactionId
+      }&amount=${paymentData.amount}&redirectTo=${encodeURIComponent(
+        "https://universe-hub.vercel.app"
+      )}`,
       fail_url: config.PAYMENT_FAIL_URL,
       cancel_url: config.PAYMENT_CANCEL_URL,
-      ipn_url: config.PAYMENT_IPN_URL, // Replace with your IPN URL
+      ipn_url: config.PAYMENT_IPN_URL,
       shipping_method: "N/A",
       product_name: paymentData.productName,
       product_category: paymentData.productCategory,
@@ -80,7 +84,7 @@ const validatePayment = async (payload: any) => {
       method: "GET",
       url: `${config.PAYMENT_VALIDATION_URL}?val_id=${payload.val_id}&store_id=${config.STORE_ID}&store_passwd=${config.STORE_SECRET}&format=json`,
     });
-    console.log("valid",response.data);
+    console.log("valid", response.data);
     return response.data;
   } catch (err) {
     throw new AppError(StatusCodes.BAD_REQUEST, "Payment validation failed!");
@@ -91,5 +95,3 @@ export const SSLService = {
   Payment,
   validatePayment,
 };
-
-

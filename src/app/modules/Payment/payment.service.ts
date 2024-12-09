@@ -1,5 +1,8 @@
+import { StatusCodes } from "http-status-codes";
 import { SSLService } from "./payment.utils";
-
+import { PrismaClient } from "@prisma/client";
+import AppError from "../../Error/appError";
+const prisma = new PrismaClient();
 const validatePaymentIntoDB = async (payload: any) => {
   console.log("Processing IPN Data:", payload);
 
@@ -15,10 +18,10 @@ const validatePaymentIntoDB = async (payload: any) => {
   //  Validate the payment using the SSLCommerz service
   const validationResponse = await SSLService.validatePayment(payload.val_id);
 
+   
   
 
-  // Payment is valid, proceed to process the order (e.g., update database)
-  console.log("Payment validated successfully:", validationResponse);
+  
 
   return {
     message: "Payment success!",
@@ -26,6 +29,37 @@ const validatePaymentIntoDB = async (payload: any) => {
   };
 };
 
+
+
+const updatePaymentStatusIntoDB = async (payload: {
+  transactionId : any;
+ 
+}) => {
+  console.log("Updating Payment Status in DB:", payload);
+
+  const { transactionId } = payload;
+
+  
+
+  // Update the payment status in the database
+  const updatedOrder = await prisma.order.update({
+    where: { trackingId: transactionId },
+    data: { paymentStatus: "PAID" },
+  });
+
+  if (!updatedOrder) {
+    throw new AppError(
+      StatusCodes.NOT_FOUND,
+      "Order not found or could not update payment status."
+    );
+  }
+
+  return updatedOrder;
+};
+
+
+
 export const PaymentService = {
   validatePaymentIntoDB,
+  updatePaymentStatusIntoDB,
 };

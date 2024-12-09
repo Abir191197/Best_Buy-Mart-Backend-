@@ -132,7 +132,7 @@ const getAllOrdersForAdminFromDB = async () => {
   });
 };
 const getAllOrdersForVendorFromDB = async (user: any) => {
-  console.log(user.userId);
+
 
   return prisma.order.findMany({
     where: {
