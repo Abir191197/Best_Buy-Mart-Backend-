@@ -24,7 +24,7 @@ router.post(
 router.get("/allProducts",
 
   productController.getAllProducts);
-
+//update product
 router.put(
   "/updateProduct/:productId",
   //authVerify(USER_ROLE.ADMIN, USER_ROLE.VENDOR), // Verify the user is authenticated
@@ -38,7 +38,7 @@ router.put(
 );
 
 
-
+//duplicate product
 router.post(
   "/duplicateProduct/:productId",
   //authVerify(USER_ROLE.ADMIN, USER_ROLE.VENDOR), // Verify the user is authenticated

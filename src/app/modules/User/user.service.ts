@@ -1,34 +1,41 @@
-import bcrypt from "bcrypt";
 import { JwtPayload } from "jsonwebtoken";
 
-import { TUser } from "./user.interface";
+import { PrismaClient } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
 import AppError from "../../Error/appError";
-import { PrismaClient } from "@prisma/client";
+import { TUser } from "./user.interface";
 
 const prisma = new PrismaClient();
-
 
 const findUserFromDB = async (payload: JwtPayload | null) => {
   try {
     if (payload !== null) {
-      const result = await prisma.user
-        .findUnique({
-          where: { email: payload.email },
-          select: {
-            userId: true,
-            email: true,
-            name: true,
-           
-            role: true,
-            profileImg: true,
-            status: true,
-            isDeleted: true,
-            createdAt: true,
-            updatedAt: true,
-            password: false, // Exclude the password field
-          },
-        });
+      const result = await prisma.user.findUnique({
+        where: { email: payload.email },
+        select: {
+          userId: true,
+          email: true,
+          name: true,
+          role: true,
+          profileImgSrc: true,
+          profileImgSize: true,
+          phone: true,
+          street: true,
+          city: true,
+          state: true,
+          postalCode: true,
+          country: true,
+          status: true,
+          isDeleted: true,
+          createdAt: true,
+          updatedAt: true,
+          password: false,
+          shops: true,
+          RecentProductView: true,
+          Order: true,
+          Review: true,
+        },
+      });
       return result;
     }
   } catch (error) {
@@ -45,15 +52,15 @@ const updatedUserIntoDB = async (
       const updatedUser = await prisma.user.update({
         where: { email: payload.email },
         data: {
-          ...updateData,
+          ...updateData, // Update with all the provided data (name, address, profile image, etc.)
         },
         select: {
           userId: true,
           email: true,
           name: true,
-         
           role: true,
-          profileImg: true,
+          profileImgSrc: true,
+          profileImgSize: true,
           status: true,
           isDeleted: true,
           createdAt: true,
@@ -80,7 +87,6 @@ const updatedUserIntoDB = async (
 };
 
 export const UserService = {
- 
   findUserFromDB,
   updatedUserIntoDB,
 };

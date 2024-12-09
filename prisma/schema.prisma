@@ -40,8 +40,15 @@ model User {
   email          String    @unique
   password       String
   role           Role      @default(USER)
-  profileImg     String?
+  profileImgSrc     String?
+  profileImgSize     Int?
   status         Status    @default(PENDING)
+  phone        String?
+  street       String?
+  city         String?
+  state        String?
+  postalCode   String?
+  country      String?
   isDeleted      IsDeleted @default(FALSE)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -53,21 +60,9 @@ model User {
   Review         Review[]
   RecentProductView RecentProductView[]
   Order          Order[]
-  Address        Address?
+ 
 }
-model Address {
-  addressId    String    @id @default(uuid()) @db.Uuid
-  phone        String
-  street       String
-  city         String
-  state        String
-  postalCode   String
-  country      String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  userId       String    @unique @db.Uuid
-  user         User      @relation(fields: [userId], references: [userId])
-}
+
 
 model Product {
   productId   String    @id @default(uuid()) @db.Uuid
