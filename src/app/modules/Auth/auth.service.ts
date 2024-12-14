@@ -74,7 +74,7 @@ const signUpUser = async (payload: TUser) => {
   const { password, ...userWithoutSensitiveFields } = result;
 
   // Send the OTP to the user's email
-  //await sendOtpMail(userWithoutSensitiveFields.email, otp.toString());
+  await sendOtpMail(userWithoutSensitiveFields.email, otp.toString());
 
   return { email: payload.email };
 };
@@ -157,8 +157,11 @@ const refreshToken = async (token: string) => {
 
 const OtpVerifyFromDB = async (payload: {
   email: string;
-  verificationCode: string;
-}) => {
+  otp: string;
+
+})=> {
+  
+  console.log(payload);
   try {
     // Fetch user data based on the email and retrieve OTP and expiration time
     const user = await prisma.user.findUniqueOrThrow({
@@ -176,7 +179,7 @@ const OtpVerifyFromDB = async (payload: {
     });
 
     // Check if the OTP is correct
-    if (user.verificationCode !== payload.verificationCode) {
+    if (user.verificationCode !== payload.otp) {
       throw new AppError(401, "Invalid OTP"); // Custom error handling or use StatusCodes directly
     }
 

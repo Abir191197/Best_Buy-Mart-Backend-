@@ -21,7 +21,8 @@ app.use(cookieParser());
 // CORS configuration
 const corsOptions = {
   origin: [
-    "http://localhost:5173", // Your frontend URL
+    "http://localhost:5173",
+    "https://best-buy-mart.vercel.app",
     "https://best-buy-mart-backend-5cceda1dad93.herokuapp.com", // Backend URL (for production)
   ],
   credentials: true,
