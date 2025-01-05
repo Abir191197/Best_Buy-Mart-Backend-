@@ -62,7 +62,7 @@ const logIn = catchAsync(async (req, res) => {
     userId: user.userId,
     name: user.name,
     email: user.email,
-   
+    profileImgSrc: user.profileImgSrc,
     role: user.role,
   };
 
@@ -119,7 +119,7 @@ const OtpVerification = catchAsync(async (req, res) => {
     name: user.name,
     email: user.email,
     role: user.role,
-   
+    profileImgSrc: user.profileImgSrc,
   };
 
   sendResponse(res, {

@@ -1,5 +1,4 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { JwtPayload } from "jsonwebtoken";
 import ProductQueryParams from "./interface";
 const prisma = new PrismaClient();
 
@@ -31,8 +30,12 @@ const createProductIntoDB = async (productData: any) => {
         description: productData.description,
         price: productData.price,
         stock: productData.stock,
-        category: productData.category,
-        shopId: productData.shopId,
+        categoryName: productData.category, // Make sure you are passing categoryId here
+        shopId: productData.shopId, // Link the shopId correctly
+        discountCode: productData.discountCode,
+        discountPercent: productData.discountPercent,
+
+        // Create Product Images
         ProductImg: {
           create: productData.images.map((img: any) => ({
             imgPath: img.path, // Save the image URL from S3
@@ -42,7 +45,6 @@ const createProductIntoDB = async (productData: any) => {
       },
     });
 
-    console.log("Product created with images:", product);
     return product; // Return the created product with images
   } catch (error) {
     console.error("Error creating product:", error);
@@ -52,7 +54,7 @@ const createProductIntoDB = async (productData: any) => {
 
 const getAllProductsFromDB = async (query: ProductQueryParams) => {
   try {
-    const { searchTerm, sort, skip = 0, limit = 10, fields } = query;
+    const { searchTerm, sort, skip = 0, limit = 100, fields } = query;
 
     // Build the search condition if searchTerm is provided
     const searchCondition: Prisma.ProductWhereInput | undefined = searchTerm
@@ -97,7 +99,6 @@ const getAllProductsFromDB = async (query: ProductQueryParams) => {
       },
     });
 
-    console.log("Products retrieved:", products);
     return products; // Return the products fetched from the database
   } catch (error) {
     console.error("Error retrieving products:", error);
@@ -125,7 +126,6 @@ const getProductFromDB = async (productId: string) => {
       throw new Error("Product not found!");
     }
 
-    console.log("Product retrieved:", product);
     return product; // Return the product fetched from the database
   } catch (error) {
     console.error("Error getting product:", error);
@@ -162,18 +162,18 @@ const updateProductInDB = async (productId: string, updateData: any) => {
   }
 };
 
-// Service function to duplicate and edit a product
 const duplicateProductInDB = async (productId: any, updatedData: any) => {
-  console.log("productId from service", productId);
+  console.log("Product data from service:", updatedData);
+
   try {
-    // Find the existing product to duplicate
+    // Fetch the existing product to duplicate
     const existingProduct = await prisma.product.findUnique({
       where: {
-        productId: productId, // Find product by productId
+        productId: productId, // Ensure this matches your schema
       },
       include: {
-        ProductImg: true, // Include associated images
-        shop: true, // Include associated shop for validation (if needed)
+        ProductImg: true, // Include images
+        shop: true, // Include shop info if validation is needed
       },
     });
 
@@ -181,48 +181,61 @@ const duplicateProductInDB = async (productId: any, updatedData: any) => {
       throw new Error("Product not found!");
     }
 
-    // Map only the necessary fields (imgPath and imgSize) for duplication
-    const imagesToCreate = existingProduct.ProductImg.map((img: any) => {
-      return {
-        imgPath: img.imgPath, // Only take the imgPath from the existing image
-        imgSize: img.imgSize, // Only take the imgSize from the existing image
-      };
-    });
+    console.log("Existing Product:", existingProduct);
 
-    // Construct the data for the new product, using the images to create the new product
+    // Prepare ProductImg.create array
+    let imagesToCreate = [];
+
+    if (updatedData.images && updatedData.images.length > 0) {
+      // Handle uploaded image files
+      imagesToCreate = updatedData.images.map((img: any) => ({
+        imgPath: img.path,
+        imgSize: img.size,
+      }));
+    } else if (updatedData.imagesURL && updatedData.imagesURL.length > 0) {
+      // Handle provided image URLs
+      imagesToCreate = updatedData.imagesURL.map((url: string) => ({
+        imgPath: url,
+        imgSize: 0, // Default size for URLs if not provided
+      }));
+    }
+
+    // Create new product data, preserving fields from the original product
     const newProductData = {
       name: updatedData.name || existingProduct.name,
       description: updatedData.description || existingProduct.description,
       price: updatedData.price || existingProduct.price,
       stock: updatedData.stock || existingProduct.stock,
-      category: updatedData.category || existingProduct.category,
-      shopId: updatedData.shopId || existingProduct.shopId, // Use provided shopId or retain the existing one
+      categoryName: updatedData.category || existingProduct.categoryName,
+      shopId: updatedData.shopId || existingProduct.shopId,
       ProductImg: {
-        create: updatedData.images
-          ? updatedData.images.map((img: any) => ({
-              imgPath: img.path, // Use new images if provided
-              imgSize: img.size,
-            }))
-          : imagesToCreate, // Use the mapped image data for the new product
+        create: imagesToCreate, // Use the prepared images array
       },
     };
 
-    // Create the new duplicated product with the updated data
+    // Create the duplicated product
     const duplicatedProduct = await prisma.product.create({
       data: newProductData,
     });
 
     console.log("Product duplicated successfully:", duplicatedProduct);
     return duplicatedProduct;
-  } catch (error) {
-    console.error("Error duplicating product:", error);
-    throw new Error("Failed to duplicate product. Please try again.");
+  } catch (error: any) {
+    console.error("Error duplicating product:", error.message);
+
+    // Return detailed error messages for debugging
+    if (error.code === "P2025") {
+      throw new Error("The product or associated shop does not exist.");
+    }
+    throw new Error(
+      "Failed to duplicate product. Please check your input data."
+    );
   }
 };
 
 //track add recent product view by user
 
-const trackProductViewInDB = async (userId:any, productId: any) => {
+const trackProductViewInDB = async (userId: any, productId: any) => {
   try {
     // Check if the user has already viewed the product
     const existingView = await prisma.recentProductView.findFirst({
@@ -250,10 +263,9 @@ const trackProductViewInDB = async (userId:any, productId: any) => {
   }
 };
 
-
 //get recent product view by user
 
-const getRecentProductViewFromDB = async (userId:any) => {
+const getRecentProductViewFromDB = async (userId: any) => {
   try {
     // Fetch the recent product views by the user
     const recentViews = await prisma.recentProductView.findMany({
@@ -275,7 +287,7 @@ const getRecentProductViewFromDB = async (userId:any) => {
     console.error("Error getting recent product views:", error);
     throw new Error("Failed to get recent product views. Please try again.");
   }
-}
+};
 
 export const ProductService = {
   createProductIntoDB,

@@ -66,7 +66,7 @@ const getAllProducts = catchAsync(async (req, res) => {
           : undefined, // Field selection
     };
 
-    console.log(query); // Optional: log the parsed query for debugging
+     // Optional: log the parsed query for debugging
 
     // Fetch products from the service
     const products = await ProductService.getAllProductsFromDB(query);

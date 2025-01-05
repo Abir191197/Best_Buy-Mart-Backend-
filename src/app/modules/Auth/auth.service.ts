@@ -14,17 +14,11 @@ import { TUser } from "../User/user.interface";
 import { PrismaClient } from "@prisma/client";
 import sendOtpMail from "../../utils/sendOtpEmail";
 
-
 const prisma = new PrismaClient();
-
-
 
 //user sign Up
 
 const signUpUser = async (payload: TUser) => {
-
-
-
   // Check if the email already exists
   const existingUser = await prisma.user.findUnique({
     where: { email: payload.email },
@@ -32,7 +26,7 @@ const signUpUser = async (payload: TUser) => {
   });
 
   // If the user exists and is verified, throw an error
-  if (existingUser?.otpVerified==true) {
+  if (existingUser?.otpVerified == true) {
     throw new AppError(
       StatusCodes.CONFLICT,
       "User already exists and is verified!"
@@ -52,7 +46,6 @@ const signUpUser = async (payload: TUser) => {
       // Update the user if they are not verified
       name: payload.name,
       password: hashedPassword,
-      
 
       verificationCode: otp.toString(),
       otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
@@ -62,9 +55,9 @@ const signUpUser = async (payload: TUser) => {
       name: payload.name,
       email: payload.email,
       password: hashedPassword,
-    
+
       role: payload.role,
-    
+
       verificationCode: otp.toString(),
       otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     },
@@ -79,7 +72,6 @@ const signUpUser = async (payload: TUser) => {
   return { email: payload.email };
 };
 
-
 // login User
 
 const logInUser = async (payload: { email: string; password: string }) => {
@@ -92,7 +84,7 @@ const logInUser = async (payload: { email: string; password: string }) => {
       role: true,
       userId: true,
       name: true,
-
+      profileImgSrc: true,
       status: true,
       otpVerified: true,
     }, // Select only necessary fields
@@ -129,7 +121,12 @@ const logInUser = async (payload: { email: string; password: string }) => {
   }
 
   // Generate JWT tokens
-  const jwtPayload = {userId:user.userId, email: user.email, role: user.role,name:user.name || "USER" }; // Default role to "user" if undefined
+  const jwtPayload = {
+    userId: user.userId,
+    email: user.email,
+    role: user.role,
+    name: user.name || "USER",
+  }; // Default role to "user" if undefined
   const accessToken = generateAccessToken(jwtPayload);
   const refreshToken = generateRefreshToken(jwtPayload);
 
@@ -138,7 +135,6 @@ const logInUser = async (payload: { email: string; password: string }) => {
 
   return { user: userWithoutSensitiveData, accessToken, refreshToken };
 };
-
 
 // RefreshToken function
 const refreshToken = async (token: string) => {
@@ -151,16 +147,7 @@ const refreshToken = async (token: string) => {
   return { accessToken: newAccessToken };
 };
 
-
-
-
-
-const OtpVerifyFromDB = async (payload: {
-  email: string;
-  otp: string;
-
-})=> {
-  
+const OtpVerifyFromDB = async (payload: { email: string; otp: string }) => {
   console.log(payload);
   try {
     // Fetch user data based on the email and retrieve OTP and expiration time
@@ -171,7 +158,7 @@ const OtpVerifyFromDB = async (payload: {
         role: true,
         userId: true,
         name: true,
-        
+        profileImgSrc: true,
         verificationCode: true, // OTP stored in the database
         otpExpiresAt: true,
         otpVerified: true, // Expiry time for OTP
@@ -193,7 +180,6 @@ const OtpVerifyFromDB = async (payload: {
     const jwtPayload = {
       email: user.email,
       role: user.role,
-     
     };
 
     const accessToken = generateAccessToken(jwtPayload); // Call your JWT generation function
@@ -249,11 +235,6 @@ const resendOtpIntoDB = async (payload: { email: string }) => {
 
   return { message: "OTP has been resent successfully." };
 };
-
-
-
-
-
 
 export const AuthServices = {
   signUpUser,

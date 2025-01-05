@@ -10,18 +10,20 @@ import { Shop_Status } from "@prisma/client";
 
 const shopCreate = catchAsync( async (req, res) => {
   try {
-    const { data } = req.body; // Extract shop data from the request body
+    const { data } = req.body;
+    const { name, description, userId } = data;
+    // Extract shop data from the request body
     const images = req.files as (Express.Multer.File & { location: string })[]; // Get the uploaded images with S3 location
 
     // Construct the shopData object, including S3 image URLs
     const shopData = {
-      ...data,
-      images: images.map((file) => ({
-        path: file.location, // S3 URL of the uploaded image
-        size: file.size, // Image size
-      })),
+      name,
+      logoImgPath: images.length > 0 ? images[0].location : undefined, // Assuming the first image is the profile picture
+      logoImgSize: images.length > 0 ? images[0].size : undefined, // If size is needed for profile image
+      description,
+      userId,
     };
-
+  
     // Save shop data into the database
     const result = await ShopService.createShopIntoDB(shopData);
 

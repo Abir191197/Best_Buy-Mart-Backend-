@@ -88,7 +88,7 @@ export const createOrderIntoDB = async (orderData: any) => {
       address: `${userAddress.street}, ${userAddress.city}, ${userAddress.state}, ${userAddress.postalCode}`,
       phoneNumber: userAddress.phone,
       productName: product.name,
-      productCategory: product.category || "General", // Default category if not provided
+      productCategory: product.categoryName, // Default category if not provided
     });
 
     console.log("Payment response:", paymentResponse);

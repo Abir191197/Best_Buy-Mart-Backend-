@@ -6,12 +6,29 @@ const prisma = new PrismaClient();
 // Define the interface for shop data
 
 
-const createShopIntoDB = async (shopData: ShopData) => {
-
+const createShopIntoDB = async (shopData: any) => {
+  console.log(shopData);
   try {
     // Validate input (basic checks)
-    if (!shopData.name || !shopData.description || !shopData.userId || !shopData.images || shopData.images.length === 0) {
-      throw new Error("Missing required fields (name, description, userId, or images).");
+    if (
+      !shopData.name ||
+      !shopData.description ||
+      !shopData.userId ||
+      !shopData.logoImgPath ||
+      !shopData.logoImgSize
+    ) {
+      throw new Error(
+        "Missing required fields (name, description, userId, or images)."
+      );
+    }
+
+    // Check if userId exists in the User table
+    const userExists = await prisma.user.findUnique({
+      where: { userId: shopData.userId },
+    });
+
+    if (!userExists) {
+      throw new Error(`User with userId ${shopData.userId} does not exist.`);
     }
 
     // Create the shop in the database
@@ -20,8 +37,8 @@ const createShopIntoDB = async (shopData: ShopData) => {
         name: shopData.name,
         description: shopData.description,
         userId: shopData.userId,
-        logoImgPath: shopData.images[0].path, // Save the first image as the logo
-        logoImgSize: shopData.images[0].size, // Save the size of the first image as logo size
+        logoImgPath: shopData.logoImgPath,
+        logoImgSize: shopData.logoImgSize,
       },
     });
 
@@ -36,6 +53,7 @@ const createShopIntoDB = async (shopData: ShopData) => {
     throw new Error("Failed to create shop. Please try again."); // More generic error for users
   }
 };
+
 
 const getAllShopFromDB = async () => {
   try {
